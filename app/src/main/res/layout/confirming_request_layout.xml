@@ -4,17 +4,37 @@
     android:layout_height="match_parent"
     android:id="@+id/confirmingRequestLayout"
     xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:paddingTop="70dp"
+        android:id="@+id/topBar">
+        <TextView
+            android:layout_width="300dp"
+            android:layout_height="40dp"
+            android:text="Text2"
+            android:textColor="#000"
+            android:textSize="16sp"
+            android:id="@+id/addressText"
+            android:background="@color/white" />
+    </LinearLayout>
+
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true">
+        android:layout_alignParentBottom="true"
+        android:layout_centerInParent="true">
 
         <LinearLayout
             android:layout_width="300dp"
             android:layout_height="100dp"
             android:orientation="horizontal"
-            android:background="@color/white">
+            android:background="@color/white"
+            android:layout_marginBottom="10dp">
 
             <ImageView
                 android:layout_width="75dp"
@@ -22,7 +42,7 @@
                 android:id="@+id/carPictureRequest"/>
 
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
@@ -42,7 +62,7 @@
         </LinearLayout>
 
         <Button
-            android:layout_width="300dp"
+            android:layout_width="match_parent"
             android:layout_height="60dp"
             android:id="@+id/requestWashButton"
             android:text="Request Wash"

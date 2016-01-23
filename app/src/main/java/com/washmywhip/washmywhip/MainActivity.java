@@ -19,6 +19,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -28,6 +29,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -54,10 +56,32 @@ public class MainActivity extends AppCompatActivity  implements OnMapReadyCallba
             IconGenerator factory = new IconGenerator(getApplicationContext());
             Bitmap icon = factory.makeIcon("Set Location");
 
-            mMarker = mMap.addMarker(new MarkerOptions().position(loc).icon(BitmapDescriptorFactory.fromBitmap(icon)));
+           // mMarker = mMap.addMarker(new MarkerOptions().position(loc).icon(BitmapDescriptorFactory.fromBitmap(icon)));
 
             if(mMap!=null){
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(loc, 16.0f));
+            }
+        }
+    };
+
+    private GoogleMap.OnCameraChangeListener myCameraChangeListener = new GoogleMap.OnCameraChangeListener() {
+        @Override
+        public void onCameraChange(CameraPosition cameraPosition) {
+
+            String mAddress = "";
+            Geocoder mGeocoder = new Geocoder(MainActivity.this);
+            LatLng cameraLocation = cameraPosition.target;
+            try {
+                List<Address> addressList = mGeocoder.getFromLocation(cameraLocation.latitude, cameraLocation.longitude, 1);
+                if(addressList.size()>0){
+                    String address = addressList.get(0).getAddressLine(0);
+                    String city = addressList.get(0).getAddressLine(1);
+                    String country = addressList.get(0).getAddressLine(2);
+                    mAddress = address + " " + city + ", " + country;
+                    addressText.setText(mAddress);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     };
@@ -74,7 +98,7 @@ public class MainActivity extends AppCompatActivity  implements OnMapReadyCallba
     ImageView triangle;
 
     @InjectView(R.id.addressText)
-    TextView addressText;
+    EditText addressText;
 
     @InjectView(R.id.inactiveLayout)
     RelativeLayout inactiveLayout;
@@ -88,12 +112,14 @@ public class MainActivity extends AppCompatActivity  implements OnMapReadyCallba
         setContentView(R.layout.activity_main);
         ButterKnife.inject(this);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        //setSupportActionBar(toolbar);
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         setLocationButton.setOnClickListener(this);
+        //addressText.setText(getMyLocationAddress());
     }
 
     @Override
@@ -123,6 +149,27 @@ public class MainActivity extends AppCompatActivity  implements OnMapReadyCallba
         mMap = googleMap;
         mMap.setMyLocationEnabled(true);
         mMap.setOnMyLocationChangeListener(myLocationChangeListener);
+        mMap.setOnCameraChangeListener(myCameraChangeListener);
+    }
+
+
+    public String getMyLocationAddress(){
+        String mAddress = "";
+        LatLng newLocation = mMap.getCameraPosition().target;
+        Geocoder mGeocoder = new Geocoder(this);
+        try {
+            List<Address> addressList = mGeocoder.getFromLocation(newLocation.latitude, newLocation.longitude, 1);
+            if(addressList.size()>0){
+                String address = addressList.get(0).getAddressLine(0);
+                String city = addressList.get(0).getAddressLine(1);
+                String country = addressList.get(0).getAddressLine(2);
+                mAddress = address + " " + city + ", " + country;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return mAddress;
     }
 
     @Override
@@ -135,19 +182,9 @@ public class MainActivity extends AppCompatActivity  implements OnMapReadyCallba
             LatLng newLocation = mMap.getCameraPosition().target;
             mMarker = mMap.addMarker(new MarkerOptions().position(newLocation).visible(false));
 
-            Geocoder mGeocoder = new Geocoder(this);
-            try {
-                List<Address> addressList = mGeocoder.getFromLocation(newLocation.latitude, newLocation.longitude, 1);
-                if(addressList.size()>0){
-                    String address = addressList.get(0).getAddressLine(0);
-                    String city = addressList.get(0).getAddressLine(1);
-                    String country = addressList.get(0).getAddressLine(2);
-                    String displayText = address + " " + city + ", " + country;
-                    addressText.setText(displayText);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+
+            addressText.setText(getMyLocationAddress());
+
 
             View currentView = inactiveLayout;
             ViewGroup parent = (ViewGroup) inactiveLayout.getParent();
