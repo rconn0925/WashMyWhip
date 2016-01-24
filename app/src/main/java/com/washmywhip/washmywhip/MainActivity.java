@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -49,6 +50,7 @@ public class MainActivity extends AppCompatActivity  implements OnMapReadyCallba
     private GoogleMap mMap;
     private Marker mMarker;
     private Context mContext;
+    private View currentView;
     private GoogleMap.OnMyLocationChangeListener myLocationChangeListener = new GoogleMap.OnMyLocationChangeListener() {
         @Override
         public void onMyLocationChange(Location location) {
@@ -80,6 +82,7 @@ public class MainActivity extends AppCompatActivity  implements OnMapReadyCallba
                     String country = addressList.get(0).getAddressLine(2);
                     mAddress = address + " " + city + ", " + country;
                     addressText.setText(mAddress);
+                    addressText.clearFocus();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -87,24 +90,22 @@ public class MainActivity extends AppCompatActivity  implements OnMapReadyCallba
         }
     };
 
+    private GoogleMap.OnMapClickListener myMapClickListener = new GoogleMap.OnMapClickListener() {
+        @Override
+        public void onMapClick(LatLng latLng) {
+            Log.d(TAG,"clearing focus on address text");
+            addressText.clearFocus();
+        }
+    };
+
     @InjectView(R.id.setLocationButton)
     Button setLocationButton;
-
-    Button requestWashButton;
-
-    @InjectView(R.id.pin)
-    ImageView pin;
-
-    @InjectView(R.id.triangle)
-    ImageView triangle;
-
     @InjectView(R.id.addressText)
     EditText addressText;
-
     @InjectView(R.id.inactiveLayout)
     RelativeLayout inactiveLayout;
 
-    //@InjectView(R.id.confirmedAddress)
+    Button requestWashButton;
     TextView confirmedAddress;
 
 
@@ -121,11 +122,14 @@ public class MainActivity extends AppCompatActivity  implements OnMapReadyCallba
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         setLocationButton.setOnClickListener(this);
+        currentView = inactiveLayout;
         addressText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 
-                Log.d(TAG, event.toString() + ",  " + actionId);
+                if(actionId == EditorInfo.IME_ACTION_DONE){
+                    Log.d(TAG,"entered address");
+                }
                 return false;
             }
         });
@@ -133,7 +137,7 @@ public class MainActivity extends AppCompatActivity  implements OnMapReadyCallba
 
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                Log.d(TAG, v.toString() + ",  " + hasFocus);
+                Log.d(TAG, "edir text focus: "+hasFocus);
             }
         });
         //addressText.setText(getMyLocationAddress());
@@ -167,6 +171,7 @@ public class MainActivity extends AppCompatActivity  implements OnMapReadyCallba
         mMap.setMyLocationEnabled(true);
         mMap.setOnMyLocationChangeListener(myLocationChangeListener);
         mMap.setOnCameraChangeListener(myCameraChangeListener);
+      //  mMap.setOnMapClickListener(myMapClickListener);
     }
 
 
@@ -189,6 +194,16 @@ public class MainActivity extends AppCompatActivity  implements OnMapReadyCallba
         return mAddress;
     }
 
+    public void swapView(int v) {
+
+        ViewGroup parent = (ViewGroup) currentView.getParent();
+        int index = parent.indexOfChild(currentView);
+        parent.removeView(currentView);
+        int view = v;
+        currentView = getLayoutInflater().inflate(view, parent, false);
+        parent.addView(currentView, index);
+    }
+
     @Override
     public void onClick(View v) {
         if(v.getId()==R.id.setLocationButton){
@@ -202,14 +217,8 @@ public class MainActivity extends AppCompatActivity  implements OnMapReadyCallba
 
             addressText.setText(getMyLocationAddress());
 
-
-            View currentView = inactiveLayout;
-            ViewGroup parent = (ViewGroup) inactiveLayout.getParent();
-            int index = parent.indexOfChild(currentView);
-            parent.removeView(currentView);
             int view = R.layout.confirming_request_layout;
-            currentView = getLayoutInflater().inflate(view, parent, false);
-            parent.addView(currentView, index);
+            swapView(view);
 
             requestWashButton = (Button) findViewById(R.id.requestWashButton);
             requestWashButton.setOnClickListener(this);
@@ -221,6 +230,10 @@ public class MainActivity extends AppCompatActivity  implements OnMapReadyCallba
         }
         if(v.getId() == R.id.requestWashButton){
             Log.d(TAG, "Wash Requested");
+
+            int view = R.layout.waiting_layout;
+            swapView(view);
+
         }
     }
 }
