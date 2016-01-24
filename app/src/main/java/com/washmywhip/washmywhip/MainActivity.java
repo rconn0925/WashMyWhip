@@ -14,6 +14,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -103,7 +104,8 @@ public class MainActivity extends AppCompatActivity  implements OnMapReadyCallba
     @InjectView(R.id.inactiveLayout)
     RelativeLayout inactiveLayout;
 
-    RelativeLayout confirmingRequestLayout;
+    //@InjectView(R.id.confirmedAddress)
+    TextView confirmedAddress;
 
 
     @Override
@@ -119,6 +121,21 @@ public class MainActivity extends AppCompatActivity  implements OnMapReadyCallba
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         setLocationButton.setOnClickListener(this);
+        addressText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+
+                Log.d(TAG, event.toString() + ",  " + actionId);
+                return false;
+            }
+        });
+        addressText.setOnFocusChangeListener(new TextView.OnFocusChangeListener() {
+
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                Log.d(TAG, v.toString() + ",  " + hasFocus);
+            }
+        });
         //addressText.setText(getMyLocationAddress());
     }
 
@@ -197,8 +214,12 @@ public class MainActivity extends AppCompatActivity  implements OnMapReadyCallba
             requestWashButton = (Button) findViewById(R.id.requestWashButton);
             requestWashButton.setOnClickListener(this);
 
+
+            confirmedAddress = (TextView) findViewById(R.id.confirmedAddress);
+            confirmedAddress.setText(addressText.getText());
+
         }
-        if(v.getId()==R.id.requestWashButton){
+        if(v.getId() == R.id.requestWashButton){
             Log.d(TAG, "Wash Requested");
         }
     }
