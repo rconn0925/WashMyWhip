@@ -8,7 +8,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:paddingTop="70dp"
+        android:paddingTop="10dp"
         android:id="@+id/topBar">
         <ImageButton
             android:layout_width="40dp"

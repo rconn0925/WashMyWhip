@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/rain">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerInParent="true"
+        android:orientation="vertical"
+        android:paddingTop="20dp">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/logogrey"
+            android:layout_gravity="center"
+            android:paddingTop="10dp"/>
+
+        <EditText
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Username"
+            android:layout_marginTop="20dp"
+            android:id="@+id/usernameField"/>
+
+        <EditText
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Password"
+            android:layout_marginTop="20dp"
+            android:id="@+id/passwordField"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="LOG IN"
+            android:textColor="@color/white"
+            android:background="@color/blue"
+            android:layout_marginTop="20dp"
+            android:id="@+id/loginloginButton"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Forgot Passoword?"
+            android:textColor="@color/blue"
+            android:onClick="onClick"
+            android:clickable="true"
+            android:id="@+id/forgotPassword"/>
+    </LinearLayout>
+
+    <Button
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:id="@+id/cancelLoginButton"
+        android:layout_centerInParent="true"
+        android:text="Cancel"
+        android:background="@color/blue"
+        android:textColor="@color/white"
+        android:layout_marginBottom="20dp"/>
+
+</RelativeLayout>
