@@ -54,7 +54,8 @@ public class MainActivity extends AppCompatActivity implements  AboutFragment.On
     private Marker mMarker;
     private Context mContext;
     private View currentView;
-    private int userState;
+    private UserState userState;
+    private Fragment currentFragment;
 
     private GoogleMap.OnMyLocationChangeListener myLocationChangeListener = new GoogleMap.OnMyLocationChangeListener() {
         @Override
@@ -112,8 +113,8 @@ public class MainActivity extends AppCompatActivity implements  AboutFragment.On
     Button setLocationButton;
     @InjectView(R.id.addressText)
     EditText addressText;
-    @InjectView(R.id.inactiveLayout)
-    RelativeLayout inactiveLayout;
+    @InjectView(R.id.requestingLayout)
+    RelativeLayout requestingLayout;
 
     @InjectView(R.id.toolbar)
     Toolbar toolbar;
@@ -126,6 +127,7 @@ public class MainActivity extends AppCompatActivity implements  AboutFragment.On
 
     FrameLayout contentFrame;
 
+    Button signOutButton;
     Button requestWashButton;
     TextView confirmedAddress;
     SupportMapFragment mapFragment;
@@ -140,6 +142,7 @@ public class MainActivity extends AppCompatActivity implements  AboutFragment.On
         //setContentView(R.layout.activity_nav_drawer);
         ButterKnife.inject(this);
         toolbar.setTitle("");
+        currentFragment = null;
         setSupportActionBar(toolbar);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -155,7 +158,7 @@ public class MainActivity extends AppCompatActivity implements  AboutFragment.On
         getSupportActionBar().setHomeButtonEnabled(true);
         mDrawerToggle.syncState();
 
-        currentView = inactiveLayout;
+        currentView = requestingLayout;
         addressText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -307,59 +310,85 @@ public class MainActivity extends AppCompatActivity implements  AboutFragment.On
 
     private void selectItem(int position) {
         Log.d("TEST", "selectItem");
-
         // Create a new fragment and specify the planet to show based on position
-        Fragment frag = ProfileFragment.newInstance();
         if (position == 0) {
-// retunr to mapview + state view
-            View mapFrag = findViewById(R.id.map);
-            View inactiveView = findViewById(R.id.inactiveLayout);
+            // retunr to mapview + state view
+            //moar states
+            addCurrentStateView();
+            currentFragment = new Fragment();
 
-            if(mapFrag==null){
-                //reinflate mapFrag + the state view
-            }
+            mapFragment.getView().setVisibility(View.VISIBLE);
+
 
         } else if (position == 1) {
             Log.d("TEST", "PROFILE");
-            //frag = ProfileFragment.newInstance();
-            View mapFrag = findViewById(R.id.map);
-            View inactiveView = findViewById(R.id.inactiveLayout);
-            if(mapFrag.isEnabled()){
-                ((ViewGroup) mapFrag.getParent()).removeView(mapFrag);
-                Log.d("TEST", "removing mapFrag");
-            }
+            currentFragment = ProfileFragment.newInstance();
+            mapFragment.getView().setVisibility(View.INVISIBLE);
+            removeCurrentStateView();
 
-            if(inactiveView.isEnabled()){
-                ((ViewGroup) inactiveView.getParent()).removeView(inactiveView);
-                Log.d("TEST", "removing inactive view");
-            }
         } else if (position == 2) {
             Log.d("TEST", "PAYMENT");
-            frag = PaymentFragment.newInstance();
-            View mapFrag = findViewById(R.id.map);
-            View inactiveView = findViewById(R.id.inactiveLayout);
-            if(mapFrag.isEnabled()){
-                ((ViewGroup) mapFrag.getParent()).removeView(mapFrag);
-                Log.d("TEST", "removing mapFrag");
-            }
-
-            if(inactiveView.isEnabled()){
-                ((ViewGroup) inactiveView.getParent()).removeView(inactiveView);
-                Log.d("TEST", "removing inactive view");
-            }
+            currentFragment = PaymentFragment.newInstance();
+            mapFragment.getView().setVisibility(View.INVISIBLE);
+            removeCurrentStateView();
 
         } else if (position == 3) {
             Log.d("TEST", "ABOUT");
-            frag = AboutFragment.newInstance();
+            currentFragment = AboutFragment.newInstance();
+            mapFragment.getView().setVisibility(View.INVISIBLE);
+            removeCurrentStateView();
         }
 
         // Insert the fragment by replacing any existing fragment
-       FragmentManager fragmentManager = getFragmentManager();
-       fragmentManager.beginTransaction().replace(R.id.contentFrame, frag).commit();
-
+        FragmentManager fragmentManager = getFragmentManager();
+        if(currentFragment!=null){
+            fragmentManager.beginTransaction().replace(R.id.contentFrame, currentFragment).commit();
+        }
         // Highlight the selected item, update the title, and close the drawer
         navDrawerList.setItemChecked(position, true);
         mDrawerLayout.closeDrawer(navDrawerList);
+    }
+
+    public void removeCurrentStateView(){
+        /*
+        if(userState==UserState.REQUESTING){
+
+        } else if(userState == UserState.CONFIRMING) {
+
+        } else if(userState == UserState.QUEUED) {
+
+        } else if(userState == UserState.WAITING) {
+
+        } else if(userState == UserState.ARRIVED) {
+
+        } else if(userState == UserState.WASHING) {
+
+        } else if(userState == UserState.FINALIZING) {
+
+        }
+        */
+        currentView.setVisibility(View.INVISIBLE);
+    }
+
+    public void addCurrentStateView(){
+        /*
+        if(userState==UserState.REQUESTING){
+
+        } else if(userState == UserState.CONFIRMING) {
+
+        } else if(userState == UserState.QUEUED) {
+
+        } else if(userState == UserState.WAITING) {
+
+        } else if(userState == UserState.ARRIVED) {
+
+        } else if(userState == UserState.WASHING) {
+
+        } else if(userState == UserState.FINALIZING) {
+
+        }
+        currentView.setVisibility(View.VISIBLE);
+        */
     }
 
     @Override
