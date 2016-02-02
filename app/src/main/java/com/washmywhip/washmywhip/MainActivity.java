@@ -463,8 +463,8 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         } else if(userState == UserState.FINALIZING) {
 
         }
-        currentView.setVisibility(View.VISIBLE);
         */
+        currentView.setVisibility(View.VISIBLE);
     }
 
     @Override
