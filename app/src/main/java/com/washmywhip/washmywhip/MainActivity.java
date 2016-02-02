@@ -186,7 +186,6 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
                 Log.d(TAG, "edir text focus: " + hasFocus);
             }
         });
-        //addressText.setText(getMyLocationAddress());
     }
 
 
@@ -245,17 +244,8 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        mMap.setMyLocationEnabled(true);
+        allowLocationServices(true);
+        addressText.setText(getMyLocationAddress());
         mMap.setOnMyLocationChangeListener(myLocationChangeListener);
         mMap.setOnCameraChangeListener(myCameraChangeListener);
         mMap.setOnMapClickListener(myMapClickListener);
@@ -287,9 +277,55 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         int index = parent.indexOfChild(currentView);
         parent.removeView(currentView);
         int view = v;
+        //updates currentView
         currentView = getLayoutInflater().inflate(view, parent, false);
         parent.addView(currentView, index);
     }
+
+
+    public void enableBackButtonToMenu(boolean isEnabled){
+        if(isEnabled) {
+            //Add back button to menu
+        } else {
+            //Remove back button from menu
+        }
+
+    }
+
+    public void allowLocationServices(boolean allow){
+
+        if(allow) {
+    //enable
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
+            mMap.setMyLocationEnabled(true);
+        } else {
+    //disable
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
+            mMap.setMyLocationEnabled(false);
+        }
+
+
+    }
+
+
 
     @Override
     public void onClick(View v) {
@@ -306,6 +342,11 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
 
             //Lock camera postion
             mMap.getUiSettings().setAllGesturesEnabled(false);
+            allowLocationServices(false);
+
+            //add cancel button to action bar
+
+
 
             int view = R.layout.confirming_request_layout;
             swapView(view);

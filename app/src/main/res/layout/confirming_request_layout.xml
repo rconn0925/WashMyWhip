@@ -6,15 +6,19 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:paddingTop="70dp"
+        android:paddingTop="12dp"
         android:id="@+id/topBar">
         <TextView
-            android:layout_width="300dp"
-            android:layout_height="40dp"
+            android:layout_width="match_parent"
+            android:layout_height="38dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
             android:textColor="#000"
             android:textSize="16sp"
             android:id="@+id/confirmedAddress"

@@ -12,10 +12,23 @@ public class Request {
     private int washType;
     private LatLng destination;
 
-    private Request(User user, Car car, int washType, LatLng destination){
+    public Request(User user, Car car, int washType, LatLng destination){
         this.user = user;
         this.car = car;
         this.washType = washType;
         this.destination = destination;
+    }
+
+    public int getWashType(){
+        return washType;
+    }
+    public User getUser(){
+        return user;
+    }
+    public Car getCar(){
+        return car;
+    }
+    public LatLng getDestination(){
+        return destination;
     }
 }
