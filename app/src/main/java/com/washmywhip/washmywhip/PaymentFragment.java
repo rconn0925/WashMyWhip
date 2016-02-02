@@ -4,11 +4,18 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+
+import java.util.List;
 
 import butterknife.ButterKnife;
+import butterknife.InjectView;
 
 
 /**
@@ -19,7 +26,7 @@ import butterknife.ButterKnife;
  * Use the {@link PaymentFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class PaymentFragment extends Fragment {
+public class PaymentFragment extends Fragment implements AdapterView.OnItemClickListener {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -28,6 +35,9 @@ public class PaymentFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+    @InjectView(R.id.paymentList)
+    ListView paymentList;
+    String [] list;
 
     private OnFragmentInteractionListener mListener;
 
@@ -50,6 +60,7 @@ public class PaymentFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+        list = new String[]{"Card1", "Card2", "Add payment method"};
     }
 
     @Override
@@ -58,6 +69,11 @@ public class PaymentFragment extends Fragment {
         // Inflate the layout for this fragment
         View v =  inflater.inflate(R.layout.fragment_payment, container, false);
         ButterKnife.inject(this,v);
+
+
+
+        paymentList.setAdapter(new ArrayAdapter<String>(this.getActivity(), android.R.layout.simple_list_item_1, list));
+        paymentList.setOnItemClickListener(this);
         return v;
     }
 
@@ -83,6 +99,16 @@ public class PaymentFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        if (position == 0) {
+
+        } else if(position ==1 ){
+
+        }
+        Log.d("PAYMENT", "PAYMENT OPTION SELECTED");
     }
 
     /**
