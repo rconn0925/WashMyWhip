@@ -6,13 +6,27 @@
     android:layout_alignParentTop="true"
     android:id="@+id/toolbar">
     <RelativeLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:layout_gravity="center">
         <ImageView
             android:layout_width="wrap_content"
             android:contentDescription="logo"
             android:layout_height="wrap_content"
-            android:src="@drawable/logo"/>
+            android:src="@drawable/logo"
+            android:layout_centerInParent="true"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:text="Cancel"
+            android:textColor="@color/blue"
+            android:layout_centerVertical="true"
+            android:clickable="true"
+            android:onClick="onClick"
+            android:visibility="gone"
+            android:id="@+id/cancelToolbarButton"/>
     </RelativeLayout>
 </android.support.v7.widget.Toolbar>

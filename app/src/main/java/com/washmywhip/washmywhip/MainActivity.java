@@ -129,6 +129,9 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     @InjectView(R.id.toolbar)
     Toolbar toolbar;
 
+    @InjectView(R.id.cancelToolbarButton)
+    TextView cancelButton;
+
 
     @InjectView(R.id.mDrawerLayout)
     DrawerLayout mDrawerLayout;
@@ -282,16 +285,6 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         parent.addView(currentView, index);
     }
 
-
-    public void enableBackButtonToMenu(boolean isEnabled){
-        if(isEnabled) {
-            //Add back button to menu
-        } else {
-            //Remove back button from menu
-        }
-
-    }
-
     public void allowLocationServices(boolean allow){
 
         if(allow) {
@@ -331,42 +324,70 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     public void onClick(View v) {
         Log.d("TEST", "onClick");
         if(v.getId()==R.id.setLocationButton){
-            if(mMarker!= null){
-                mMarker.remove();
-            }
 
-            LatLng newLocation = mMap.getCameraPosition().target;
-            mMarker = mMap.addMarker(new MarkerOptions().position(newLocation).visible(false));
-
-            addressText.setText(getMyLocationAddress());
-
-            //Lock camera postion
-            mMap.getUiSettings().setAllGesturesEnabled(false);
-            allowLocationServices(false);
-
-            //add cancel button to action bar
-
-
-
-            int view = R.layout.confirming_request_layout;
-            swapView(view);
-
-            requestWashButton = (Button) findViewById(R.id.requestWashButton);
-            requestWashButton.setOnClickListener(this);
-
-
-            confirmedAddress = (TextView) findViewById(R.id.confirmedAddress);
-            confirmedAddress.setText(addressText.getText());
-
+            initRequesting();
         }
-        if(v.getId() == R.id.requestWashButton){
-            Log.d(TAG, "Wash Requested");
+        else if(v.getId() == R.id.requestWashButton){
+            initConfirming();
 
-            int view = R.layout.waiting_layout;
-            swapView(view);
+        } else if (v.getId() == cancelButton.getId()){
+            Log.d("MENU TEXTVIEW", "CANCEL CLICK");
+
 
         }
     }
+
+    public void initRequesting() {
+        if(mMarker!= null){
+            mMarker.remove();
+        }
+
+        LatLng newLocation = mMap.getCameraPosition().target;
+        mMarker = mMap.addMarker(new MarkerOptions().position(newLocation).visible(false));
+
+        addressText.setText(getMyLocationAddress());
+
+        //Lock camera postion
+        mMap.getUiSettings().setAllGesturesEnabled(false);
+        allowLocationServices(false);
+
+        //add cancel button to action bar
+        cancelButton.setVisibility(View.VISIBLE);
+
+
+        int view = R.layout.confirming_request_layout;
+        swapView(view);
+
+        requestWashButton = (Button) findViewById(R.id.requestWashButton);
+        requestWashButton.setOnClickListener(this);
+
+
+        confirmedAddress = (TextView) findViewById(R.id.confirmedAddress);
+        confirmedAddress.setText(addressText.getText());
+    }
+    public void initConfirming() {
+        Log.d(TAG, "Wash Requested");
+
+        int view = R.layout.waiting_layout;
+        swapView(view);
+    }
+    public void initWaiting() {
+
+    }
+    public void initQueued(){
+
+    }
+    public void initArrived() {
+
+    }
+    public void initWashing() {
+
+    }
+    public void initFinalizing(){
+
+    }
+
+
 
     private void selectItem(int position) {
         Log.d("TEST", "selectItem");
@@ -378,12 +399,16 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
             currentFragment = new Fragment();
 
             mapFragment.getView().setVisibility(View.VISIBLE);
+            //In the initial state, nothing to go back to
+
 
 
         } else if (position == 1) {
             Log.d("TEST", "PROFILE");
             currentFragment = ProfileFragment.newInstance();
             mapFragment.getView().setVisibility(View.INVISIBLE);
+            cancelButton.setVisibility(View.VISIBLE);
+            cancelButton.setText("Edit");
             removeCurrentStateView();
 
         } else if (position == 2) {
@@ -391,12 +416,14 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
             currentFragment = PaymentFragment.newInstance();
             mapFragment.getView().setVisibility(View.INVISIBLE);
             removeCurrentStateView();
+            cancelButton.setVisibility(View.GONE);
 
         } else if (position == 3) {
             Log.d("TEST", "ABOUT");
             currentFragment = AboutFragment.newInstance();
             mapFragment.getView().setVisibility(View.INVISIBLE);
             removeCurrentStateView();
+            cancelButton.setVisibility(View.GONE);
         }
 
         // Insert the fragment by replacing any existing fragment

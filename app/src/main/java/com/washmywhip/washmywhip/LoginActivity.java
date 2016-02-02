@@ -78,16 +78,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         public void onFocusChange(View v, boolean hasFocus) {
             if (!hasFocus) {
                 hideKeyboard(v);
-            } else if(hasFocus && v.getId() == mUsernameView.getId()) {
-                if(mUsernameView.getText().toString().equals("Username")){
-                    mUsernameView.setText("");
-                }
-            } else if(hasFocus && v.getId() == mPasswordView.getId()){
-                if(mPasswordView.getText().toString().equals("Password")){
-                    //Initially display the text "Password", but when the field is focused, the text should be bubbled out.
-                    mPasswordView.setTransformationMethod(PasswordTransformationMethod.getInstance());
-                    mPasswordView.setText("");
-                }
             }
         }
     };
