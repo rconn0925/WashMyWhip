@@ -1,6 +1,7 @@
 package com.washmywhip.washmywhip;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
@@ -24,6 +25,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -98,7 +100,9 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
                     String country = addressList.get(0).getAddressLine(2);
                     mAddress = address + " " + city + ", " + country;
                     addressText.setText(mAddress);
-                    addressText.clearFocus();
+                    if(addressText.hasFocus()){
+                        hideKeyboard(addressText);
+                    }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -110,7 +114,9 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         @Override
         public void onMapClick(LatLng latLng) {
             Log.d(TAG, "clearing focus on address text");
-            addressText.clearFocus();
+            if(addressText.hasFocus()){
+                hideKeyboard(addressText);
+            }
         }
     };
 
@@ -163,8 +169,6 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        setLocationButton.setOnClickListener(this);
-
         navigationOptions = new String[]{"Wash My Whip", "Profile", "Payment", "About"};
         initDrawer();
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -172,6 +176,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         mDrawerToggle.syncState();
 
         currentView = requestingLayout;
+        setLocationButton.setOnClickListener(this);
         addressText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -189,6 +194,9 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
                 Log.d(TAG, "edir text focus: " + hasFocus);
             }
         });
+        if(addressText.hasFocus()){
+            hideKeyboard(addressText);
+        }
     }
 
 
@@ -319,25 +327,76 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     }
 
 
+    //might not have to use this shitttttt
+    public void initMenuTextView(UserState state, int fragmentIdentifier){
+
+        if(state == UserState.REQUESTING){
+            //invis
+            cancelButton.setVisibility(View.GONE);
+        } else {
+            cancelButton.setVisibility(View.VISIBLE);
+            cancelButton.setText("Cancel");
+        }
+
+    }
+
 
     @Override
     public void onClick(View v) {
         Log.d("TEST", "onClick");
         if(v.getId()==R.id.setLocationButton){
-
-            initRequesting();
+            initConfirming();
         }
         else if(v.getId() == R.id.requestWashButton){
-            initConfirming();
+            initWaiting();
 
         } else if (v.getId() == cancelButton.getId()){
-            Log.d("MENU TEXTVIEW", "CANCEL CLICK");
+            if(cancelButton.getText().toString().equals("Cancel")){
+                Log.d("MENU TEXTVIEW", "CANCEL CLICK");
+
+
+                int view = R.layout.requesting_layout;
+                swapView(view);
+                initRequesting();
+
+            } else if (cancelButton.getText().toString().equals("Edit")){
+                Log.d("MENU TEXTVIEW", "EDIT CLICK");
+            }
 
 
         }
     }
 
     public void initRequesting() {
+
+        userState = UserState.REQUESTING;
+        setLocationButton = (Button) findViewById(R.id.setLocationButton);
+        setLocationButton.setOnClickListener(this);
+
+        addressText = (EditText) findViewById(R.id.addressText);
+        addressText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    Log.d(TAG, "entered address");
+                }
+                return false;
+            }
+        });
+        mMap.setOnCameraChangeListener(myCameraChangeListener);
+        //unlock camera postion
+        mMap.getUiSettings().setAllGesturesEnabled(true);
+        allowLocationServices(true);
+        addressText.setText(getMyLocationAddress());
+        if(addressText.hasFocus()){
+            hideKeyboard(addressText);
+        }
+        cancelButton = (TextView) findViewById(R.id.cancelToolbarButton);
+        cancelButton.setVisibility(View.GONE);
+    }
+    public void initConfirming() {
+        userState = UserState.CONFIRMING;
         if(mMarker!= null){
             mMarker.remove();
         }
@@ -345,14 +404,13 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         LatLng newLocation = mMap.getCameraPosition().target;
         mMarker = mMap.addMarker(new MarkerOptions().position(newLocation).visible(false));
 
-        addressText.setText(getMyLocationAddress());
-
         //Lock camera postion
         mMap.getUiSettings().setAllGesturesEnabled(false);
         allowLocationServices(false);
 
         //add cancel button to action bar
         cancelButton.setVisibility(View.VISIBLE);
+        cancelButton.setText("Cancel");
 
 
         int view = R.layout.confirming_request_layout;
@@ -365,14 +423,15 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         confirmedAddress = (TextView) findViewById(R.id.confirmedAddress);
         confirmedAddress.setText(addressText.getText());
     }
-    public void initConfirming() {
+    public void initWaiting() {
         Log.d(TAG, "Wash Requested");
+        userState = UserState.QUEUED;
+        //userState - UserState.WASHING;
 
+        cancelButton.setVisibility(View.VISIBLE);
+        cancelButton.setText("Cancel");
         int view = R.layout.waiting_layout;
         swapView(view);
-    }
-    public void initWaiting() {
-
     }
     public void initQueued(){
 
@@ -470,7 +529,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
 
         }
         */
-        currentView.setVisibility(View.INVISIBLE);
+        currentView.setVisibility(View.GONE);
     }
 
     public void addCurrentStateView(){
@@ -508,5 +567,13 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     @Override
     public void onFragmentInteraction(Uri uri) {
 
+    }
+    public void hideKeyboard(View view) {
+        InputMethodManager inputMethodManager =(InputMethodManager)getSystemService(Activity.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+    public void showKeyboard(View view) {
+        InputMethodManager inputMethodManager =(InputMethodManager)getSystemService(Activity.INPUT_METHOD_SERVICE);
+        inputMethodManager.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT);
     }
 }
