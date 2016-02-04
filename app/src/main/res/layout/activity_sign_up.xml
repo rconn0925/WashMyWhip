@@ -20,26 +20,35 @@
         <EditText
             android:layout_width="200dp"
             android:layout_height="wrap_content"
-            android:text="Username"
+            android:hint="Username"
             android:background="@color/white"
             android:layout_marginTop="20dp"
-            android:id="@+id/usernameSignup"/>
+            android:id="@+id/usernameSignup"
+            android:singleLine="true"
+            android:imeOptions="actionDone"
+            />
 
         <EditText
             android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:background="@color/white"
             android:layout_marginTop="20dp"
-            android:text="Password"
-            android:id="@+id/passwordSignup"/>
+            android:hint="Password"
+            android:id="@+id/passwordSignup"
+            android:singleLine="true"
+            android:password="true"
+            android:imeOptions="actionDone"/>
 
         <EditText
             android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:background="@color/white"
             android:layout_marginTop="20dp"
-            android:text="Re-enter Password"
-            android:id="@+id/reenterPasswordSignup"/>
+            android:hint="Re-enter Password"
+            android:password="true"
+            android:id="@+id/reenterPasswordSignup"
+            android:singleLine="true"
+            android:imeOptions="actionDone"/>
 
 
         <LinearLayout
@@ -52,8 +61,10 @@
                 android:layout_height="wrap_content"
                 android:background="@color/white"
                 android:layout_marginTop="20dp"
-                android:text="Email"
-                android:id="@+id/emailSignup"/>
+                android:hint="Email"
+                android:id="@+id/emailSignup"
+                android:singleLine="true"
+                android:imeOptions="actionDone"/>
 
             <EditText
                 android:layout_marginLeft="10dp"
@@ -61,8 +72,10 @@
                 android:layout_height="wrap_content"
                 android:background="@color/white"
                 android:layout_marginTop="20dp"
-                android:text="Phone"
-                android:id="@+id/phoneSignup"/>
+                android:hint="Phone"
+                android:id="@+id/phoneSignup"
+                android:singleLine="true"
+                android:imeOptions="actionDone"/>
 
         </LinearLayout>
 
@@ -76,8 +89,10 @@
                 android:layout_height="wrap_content"
                 android:background="@color/white"
                 android:layout_marginTop="20dp"
-                android:text="First Name"
-                android:id="@+id/firstNameSignup"/>
+                android:hint="First Name"
+                android:id="@+id/firstNameSignup"
+                android:singleLine="true"
+                android:imeOptions="actionDone"/>
 
             <EditText
                 android:layout_marginLeft="10dp"
@@ -85,8 +100,10 @@
                 android:layout_height="wrap_content"
                 android:background="@color/white"
                 android:layout_marginTop="20dp"
-                android:text="Last Name"
-                android:id="@+id/lastNameSignup"/>
+                android:hint="Last Name"
+                android:id="@+id/lastNameSignup"
+                android:singleLine="true"
+                android:imeOptions="actionDone"/>
         </LinearLayout>
 
         <Button
@@ -97,7 +114,9 @@
             android:textColor="@color/white"
             android:background="@color/blue"
             android:layout_marginTop="20dp"
-            android:id="@+id/signupSignup"/>
+            android:id="@+id/signupSignup"
+            android:singleLine="true"
+            android:imeOptions="actionDone"/>
 
     </LinearLayout>
 
@@ -110,7 +129,9 @@
         android:layout_alignParentBottom="true"
         android:layout_centerInParent="true"
         android:layout_marginBottom="20dp"
-        android:id="@+id/cancelSignup"/>
+        android:id="@+id/cancelSignup"
+        android:singleLine="true"
+        android:imeOptions="actionDone"/>
 
 
 </RelativeLayout>

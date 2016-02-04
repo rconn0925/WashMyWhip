@@ -18,7 +18,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/addCarPicture"
-            android:layout_gravity="center_horizontal" />
+            android:layout_gravity="center_horizontal"
+            android:clickable="true"
+            android:onClick="onClick"/>
 
         <EditText
             android:layout_width="match_parent"
@@ -36,6 +38,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/addCarModel"
+            android:layout_gravity="center_horizontal" />
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/addCarPlate"
             android:layout_gravity="center_horizontal" />
 
         <Button

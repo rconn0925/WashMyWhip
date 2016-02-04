@@ -1,37 +1,51 @@
 package com.washmywhip.washmywhip;
 
+import android.app.AlertDialog;
 import android.app.Fragment;
+import android.app.FragmentManager;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
+
+import butterknife.ButterKnife;
+import butterknife.InjectView;
 
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link AddCarFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link AddCarFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
-public class AddCarFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+public class AddCarFragment extends Fragment implements View.OnClickListener{
+
     private static final String COLOR = "color";
     private static final String MODEL = "model";
     private static final String MAKE = "make";
     private static final String PLATE = "plate";
     private static final String PIC = "pic";
 
-    // TODO: Rename and change types of parameters
     private String carMake;
     private String carModel;
     private String carColor;
     private String carPlate;
     private int carPic;
+
+    @InjectView(R.id.addCarPicture)
+    ImageView carImage;
+    @InjectView(R.id.addCarColor)
+    EditText colorEditText;
+    @InjectView(R.id.addCarMake)
+    EditText makeEditText;
+    @InjectView(R.id.addCarModel)
+    EditText modelEditText;
+    @InjectView(R.id.addCarPlate)
+    EditText plateEditText;
+    @InjectView(R.id.saveCar)
+    Button saveButton;
 
     private OnFragmentInteractionListener mListener;
 
@@ -82,7 +96,12 @@ public class AddCarFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_add_car, container, false);
+        View v = inflater.inflate(R.layout.fragment_add_car, container, false);
+        ButterKnife.inject(this, v);
+
+        saveButton.setOnClickListener(this);
+
+        return v;
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -108,6 +127,49 @@ public class AddCarFragment extends Fragment {
         super.onDetach();
         mListener = null;
     }
+
+    @Override
+    public void onClick(View v) {
+
+        if(v.getId() == saveButton.getId()) {
+            //Pop up succuss or failure
+
+            Fragment profileFragment = ProfileFragment.newInstance();
+            FragmentManager fragmentManager = getFragmentManager();
+            fragmentManager.beginTransaction().replace(R.id.contentFrame, profileFragment).commit();
+
+        } else if (v.getId() == carImage.getId()){
+            //selectImage();
+        }
+    }
+
+    private void selectImage() {
+        final CharSequence[] items = { "Take Photo", "Choose from Library", "Cancel" };
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle("Add Photo!");
+        builder.setItems(items, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int item) {
+                if (items[item].equals("Take Photo")) {
+                    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    //0 is request code
+                    startActivityForResult(intent, 0);
+                } else if (items[item].equals("Choose from Library")) {
+                    Intent intent = new Intent(
+                            Intent.ACTION_PICK,
+                            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    intent.setType("image/*");
+
+                    startActivityForResult(
+                            Intent.createChooser(intent, "Select File"), 1);
+                } else if (items[item].equals("Cancel")) {
+                    dialog.dismiss();
+                }
+            }
+        });
+        builder.show();
+    }
+
 
     /**
      * This interface must be implemented by activities that contain this

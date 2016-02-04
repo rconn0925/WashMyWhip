@@ -222,6 +222,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         } else if(v.getId() == addCar.getId()){
             Log.d("PROFILE", "ADD CAR");
 
+
             Fragment addCarFragment = AddCarFragment.newInstance();
             FragmentManager fragmentManager = getFragmentManager();
             fragmentManager.beginTransaction().replace(R.id.contentFrame, addCarFragment).commit();
