@@ -15,7 +15,7 @@ public class Car {
     private String plate;
 
 
-    private Car(int carID, int ownerID, String color, String make,String model, String plate){
+    private Car(int carID, int ownerID, String color, String make,String model, String plate, int pic){
         this.carID = carID;
         this.ownerID = ownerID;
         this.color = color;
@@ -27,4 +27,29 @@ public class Car {
     private Car(HashMap jsonData){
 
     }
+
+    public int getCarID() {
+        return carID;
+    }
+
+    public int getOwnerID() {
+        return ownerID;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public String getMake() {
+        return make;
+    }
+
+    public String getModel() {
+        return model;
+    }
+
+    public String getPlate() {
+        return plate;
+    }
+
 }

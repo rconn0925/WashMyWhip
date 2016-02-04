@@ -115,6 +115,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         public void onMapClick(LatLng latLng) {
             Log.d(TAG, "clearing focus on address text");
             if(addressText.hasFocus()){
+                Log.d(TAG, "address text has focus");
                 hideKeyboard(addressText);
             }
         }
@@ -423,21 +424,22 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         confirmedAddress = (TextView) findViewById(R.id.confirmedAddress);
         confirmedAddress.setText(addressText.getText());
     }
-    public void initWaiting() {
+    public void initQueued(){
         Log.d(TAG, "Wash Requested");
         userState = UserState.QUEUED;
         //userState - UserState.WASHING;
 
         cancelButton.setVisibility(View.VISIBLE);
         cancelButton.setText("Cancel");
+        //Queued popup
+
+    }
+    public void initWaiting() {
         int view = R.layout.waiting_layout;
         swapView(view);
     }
-    public void initQueued(){
-
-    }
     public void initArrived() {
-
+//can no longer cancel
     }
     public void initWashing() {
 
