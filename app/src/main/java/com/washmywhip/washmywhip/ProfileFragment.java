@@ -2,6 +2,7 @@ package com.washmywhip.washmywhip;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.app.FragmentManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -220,6 +221,10 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
             }
         } else if(v.getId() == addCar.getId()){
             Log.d("PROFILE", "ADD CAR");
+
+            Fragment addCarFragment = AddCarFragment.newInstance();
+            FragmentManager fragmentManager = getFragmentManager();
+            fragmentManager.beginTransaction().replace(R.id.contentFrame, addCarFragment).commit();
         }
     }
 
