@@ -13,15 +13,17 @@ public class Car {
     private String make;
     private String model;
     private String plate;
+    private int pic;
 
 
-    private Car(int carID, int ownerID, String color, String make,String model, String plate, int pic){
+    public Car(int carID, int ownerID, String color, String make, String model, String plate, int pic){
         this.carID = carID;
         this.ownerID = ownerID;
         this.color = color;
         this.make = make;
         this.model = model;
         this.plate = plate;
+        this.pic = pic;
     }
 
     private Car(HashMap jsonData){
@@ -51,5 +53,7 @@ public class Car {
     public String getPlate() {
         return plate;
     }
-
+    public int getPic() {
+        return pic;
+    }
 }

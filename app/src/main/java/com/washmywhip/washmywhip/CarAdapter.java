@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -14,6 +15,14 @@ import java.util.List;
 public class CarAdapter extends RecyclerView.Adapter<CarViewHolder> {
     private Context mContext;
     private List<Car> mCars;
+
+
+    public CarAdapter(Context context, ArrayList<Car> cars){
+        this.mContext = context;
+        this.mCars = cars;
+    }
+
+
     @Override
     public CarViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflator = LayoutInflater.from(parent.getContext());
@@ -29,7 +38,7 @@ public class CarAdapter extends RecyclerView.Adapter<CarViewHolder> {
         holder.carMake.setText(car.getMake());
         holder.carModel.setText(car.getModel());
         holder.carPlate.setText(car.getPlate());
-        //holder.carPic.setImageResource(R.drawable.verus);
+        holder.carPic.setImageResource(car.getPic());
     }
 
     @Override

@@ -6,10 +6,16 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.text.method.KeyListener;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.TextView;
+
+import java.util.ArrayList;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -48,6 +54,21 @@ public class ProfileFragment extends Fragment {
     @InjectView(R.id.phoneProfile)
     EditText phoneEditText;
 
+
+    @InjectView(R.id.cancelToolbarButton)
+    TextView editButton;
+
+
+
+    KeyListener defaultKeyListener;
+
+
+    private GridLayoutManager mLayoutManager;
+    private CarAdapter mCarAdapter;
+    @InjectView(R.id.carGridView)
+    RecyclerView mView;
+
+
     public ProfileFragment() {
         // Required empty public constructor
     }
@@ -67,7 +88,32 @@ public class ProfileFragment extends Fragment {
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
 
+
     }
+
+    public void initEditable(){
+        firstNameEditText.setKeyListener(defaultKeyListener);
+        firstNameEditText.setEnabled(true);
+        lastNameEditText.setKeyListener(defaultKeyListener);
+        lastNameEditText.setEnabled(true);
+        emailEditText.setKeyListener(defaultKeyListener);
+        emailEditText.setEnabled(true);
+        phoneEditText.setKeyListener(defaultKeyListener);
+        phoneEditText.setEnabled(true);
+    }
+
+    public void initNotEditable() {
+
+        firstNameEditText.setKeyListener(null);
+        firstNameEditText.setEnabled(false);
+        lastNameEditText.setKeyListener(null);
+        lastNameEditText.setEnabled(false);
+        emailEditText.setKeyListener(null);
+        emailEditText.setEnabled(false);
+        phoneEditText.setKeyListener(null);
+        phoneEditText.setEnabled(false);
+    }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -75,6 +121,18 @@ public class ProfileFragment extends Fragment {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_profile, container, false);
         ButterKnife.inject(this,v);
+
+        mLayoutManager = new GridLayoutManager(getActivity(), 1);
+        mView.setLayoutManager(mLayoutManager);
+        mCarAdapter = new CarAdapter(getActivity(),new ArrayList<Car>());
+        mView.setAdapter(mCarAdapter);
+
+        mCarAdapter.add(new Car(1, 2, "TestColor", "TestMake", "TestModel", "TestPlate", R.drawable.carsample));
+        mCarAdapter.add(new Car(1, 2, "TestColor", "TestMake", "TestModel", "TestPlate", R.drawable.carsample));
+        mCarAdapter.add(new Car(1, 2, "TestColor", "TestMake", "TestModel", "TestPlate", R.drawable.carsample));
+        mCarAdapter.add(new Car(1, 2, "TestColor", "TestMake", "TestModel", "TestPlate", R.drawable.carsample));
+        mCarAdapter.add(new Car(1, 2, "TestColor", "TestMake", "TestModel", "TestPlate", R.drawable.carsample));
+        mCarAdapter.add(new Car(1, 2, "TestColor", "TestMake", "TestModel", "TestPlate", R.drawable.carsample));
 
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
 
@@ -87,6 +145,10 @@ public class ProfileFragment extends Fragment {
         lastNameEditText.setText(last);
         emailEditText.setText(email);
         phoneEditText.setText(phone);
+
+        defaultKeyListener = firstNameEditText.getKeyListener();
+
+        initNotEditable();
 
         return v;
     }
