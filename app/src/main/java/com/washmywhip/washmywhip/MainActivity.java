@@ -362,6 +362,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
 
             } else if (cancelButton.getText().toString().equals("Edit")){
                 Log.d("MENU TEXTVIEW", "EDIT CLICK");
+
             }
 
 

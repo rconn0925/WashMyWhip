@@ -1,18 +1,24 @@
 package com.washmywhip.washmywhip;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.text.method.KeyListener;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -29,7 +35,7 @@ import butterknife.InjectView;
  * Use the {@link ProfileFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class ProfileFragment extends Fragment {
+public class ProfileFragment extends Fragment implements View.OnClickListener {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -55,8 +61,11 @@ public class ProfileFragment extends Fragment {
     EditText phoneEditText;
 
 
-    @InjectView(R.id.cancelToolbarButton)
+   // @InjectView(R.id.cancelToolbarButton)
     TextView editButton;
+
+    @InjectView(R.id.addCar)
+    RelativeLayout addCar;
 
 
 
@@ -92,6 +101,8 @@ public class ProfileFragment extends Fragment {
     }
 
     public void initEditable(){
+
+        editButton.setText("Save");
         firstNameEditText.setKeyListener(defaultKeyListener);
         firstNameEditText.setEnabled(true);
         lastNameEditText.setKeyListener(defaultKeyListener);
@@ -100,10 +111,20 @@ public class ProfileFragment extends Fragment {
         emailEditText.setEnabled(true);
         phoneEditText.setKeyListener(defaultKeyListener);
         phoneEditText.setEnabled(true);
+
+        EditText[] fields = {firstNameEditText,lastNameEditText,emailEditText,phoneEditText};
+
+        for(EditText field:fields){
+            if(field.hasFocus()){
+                hideKeyboard(field);
+            }
+        }
     }
 
     public void initNotEditable() {
 
+        editButton.setText("Edit");
+        firstNameEditText.setActivated(false);
         firstNameEditText.setKeyListener(null);
         firstNameEditText.setEnabled(false);
         lastNameEditText.setKeyListener(null);
@@ -121,6 +142,11 @@ public class ProfileFragment extends Fragment {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_profile, container, false);
         ButterKnife.inject(this,v);
+
+        editButton = (TextView) getActivity().findViewById(R.id.cancelToolbarButton);
+        editButton.setOnClickListener(this);
+
+        addCar.setOnClickListener(this);
 
         mLayoutManager = new GridLayoutManager(getActivity(), 1);
         mView.setLayoutManager(mLayoutManager);
@@ -146,7 +172,10 @@ public class ProfileFragment extends Fragment {
         emailEditText.setText(email);
         phoneEditText.setText(phone);
 
+
         defaultKeyListener = firstNameEditText.getKeyListener();
+
+
 
         initNotEditable();
 
@@ -177,6 +206,23 @@ public class ProfileFragment extends Fragment {
         mListener = null;
     }
 
+    @Override
+    public void onClick(View v) {
+
+        if(v.getId() == editButton.getId()) {
+            if(editButton.getText().toString().equals("Save")){
+                Log.d("FAPMENU TEXTVIEW", "SAVE CLICK");
+                initNotEditable();
+
+            } else if (editButton.getText().toString().equals("Edit")){
+                Log.d("FAPMENU TEXTVIEW", "EDIT CLICK");
+                initEditable();
+            }
+        } else if(v.getId() == addCar.getId()){
+            Log.d("PROFILE", "ADD CAR");
+        }
+    }
+
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -190,5 +236,14 @@ public class ProfileFragment extends Fragment {
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
+    }
+
+    public void hideKeyboard(View view) {
+        InputMethodManager inputMethodManager =(InputMethodManager)getActivity().getSystemService(Activity.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+    public void showKeyboard(View view) {
+        InputMethodManager inputMethodManager =(InputMethodManager)getActivity().getSystemService(Activity.INPUT_METHOD_SERVICE);
+        inputMethodManager.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT);
     }
 }

@@ -6,4 +6,7 @@
     <color name="white">#FFFFFF</color>
     <color name="blue">#4ACDF2</color>
     <color name="teal">#4EE2C1</color>
+    <color name="holo_light">#fff3f3f3</color>
+    <color name="black">#000000</color>
+
 </resources>

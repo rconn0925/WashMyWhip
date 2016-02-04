@@ -41,12 +41,18 @@
                     <EditText
                         android:layout_width="200dp"
                         android:layout_height="wrap_content"
-                        android:id="@+id/firstNameProfile"/>
+                        android:id="@+id/firstNameProfile"
+                        android:background="@drawable/rounded_corner"
+                        android:layout_marginTop="4dp"
+                        android:textColor="@color/black"/>
 
                     <EditText
                         android:layout_width="200dp"
                         android:layout_height="wrap_content"
-                        android:id="@+id/lastNameProfile"/>
+                        android:id="@+id/lastNameProfile"
+                        android:background="@drawable/rounded_corner"
+                        android:layout_marginTop="4dp"
+                        android:textColor="@color/black"/>
 
 
                 </LinearLayout>
@@ -61,12 +67,18 @@
             <EditText
                 android:layout_width="300dp"
                 android:layout_height="wrap_content"
-                android:id="@+id/emailProfile"/>
+                android:id="@+id/emailProfile"
+                android:background="@drawable/rounded_corner"
+                android:layout_marginTop="4dp"
+                android:textColor="@color/black"/>
 
             <EditText
                 android:layout_width="300dp"
                 android:layout_height="wrap_content"
-                android:id="@+id/phoneProfile"/>
+                android:id="@+id/phoneProfile"
+                android:background="@drawable/rounded_corner"
+                android:layout_marginTop="4dp"
+                android:textColor="@color/black"/>
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -82,8 +94,8 @@
                     android:textColor="@color/blue"
                     android:layout_alignParentLeft="true"
                     android:layout_alignParentStart="true"
-                    android:paddingStart="48dp"
-                    android:paddingLeft="48dp"/>
+                    android:paddingStart="44dp"
+                    android:paddingLeft="44dp"/>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -92,8 +104,8 @@
                     android:textColor="@color/blue"
                     android:layout_alignParentRight="true"
                     android:layout_alignParentEnd="true"
-                    android:paddingRight="48dp"
-                    android:paddingEnd="48dp"/>
+                    android:paddingRight="44dp"
+                    android:paddingEnd="44dp"/>
 
 
             </RelativeLayout>
