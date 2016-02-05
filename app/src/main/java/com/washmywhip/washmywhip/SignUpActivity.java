@@ -9,12 +9,15 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -50,6 +53,17 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
 
     EditText[] fields;
     Context mContext;
+    TextView.OnEditorActionListener mOnEditActionListener = new TextView.OnEditorActionListener() {
+
+        @Override
+        public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                hideKeyboard(v);
+            }
+            return false;
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +74,10 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         cancel.setOnClickListener(this);
         mView.setOnTouchListener(this);
         fields = new EditText[]{username,password,reenterPassword,email,phone,firstName,lastName};
+        for(EditText field:fields){
+            field.setOnEditorActionListener(mOnEditActionListener);
+        }
+
         mContext= this;
     }
 
@@ -74,7 +92,7 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         if(emptyField){
             final AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("Error creating account");
-            builder.setMessage("Please fill out all the information.");
+            builder.setMessage("Please fill out all the information!");
             builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {

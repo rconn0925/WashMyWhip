@@ -2,6 +2,7 @@ package com.washmywhip.washmywhip;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
@@ -46,6 +47,7 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.maps.GeoPoint;
 import com.google.maps.android.ui.IconGenerator;
 
 import java.io.IOException;
@@ -66,6 +68,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     private Fragment currentFragment;
     private LatLng currentLocation;
     private SharedPreferences mSharedPreferences;
+    private Geocoder mGeocoder;
 
     private GoogleMap.OnMyLocationChangeListener myLocationChangeListener = new GoogleMap.OnMyLocationChangeListener() {
         @Override
@@ -129,28 +132,22 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     private ActionBarDrawerToggle mDrawerToggle;
     private String[] navigationOptions;
     private CharSequence mTitle, mDrawerTitle;
-
     @InjectView(R.id.setLocationButton)
     Button setLocationButton;
     @InjectView(R.id.addressText)
     EditText addressText;
     @InjectView(R.id.requestingLayout)
     RelativeLayout requestingLayout;
-
     @InjectView(R.id.toolbar)
     Toolbar toolbar;
-
     @InjectView(R.id.cancelToolbarButton)
     TextView cancelButton;
-
-
     @InjectView(R.id.mDrawerLayout)
     DrawerLayout mDrawerLayout;
     @InjectView(R.id.mListView)
     ListView navDrawerList;
 
     FrameLayout contentFrame;
-
     Button signOutButton;
     Button requestWashButton;
     TextView confirmedAddress;
@@ -176,6 +173,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        mGeocoder = new Geocoder(this);
         navigationOptions = new String[]{"Wash My Whip", "Profile", "Payment", "About", "Sign out"};
         initDrawer();
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -190,6 +188,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
 
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
                     Log.d(TAG, "entered address");
+                    setCameraToUserInput();
                 }
                 return false;
             }
@@ -273,7 +272,6 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     public String getMyLocationAddress(){
         String mAddress = "";
         LatLng newLocation = mMap.getCameraPosition().target;
-        Geocoder mGeocoder = new Geocoder(this);
         try {
             List<Address> addressList = mGeocoder.getFromLocation(newLocation.latitude, newLocation.longitude, 1);
             if(addressList.size()>0){
@@ -287,6 +285,31 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         }
 
         return mAddress;
+    }
+
+    public void setCameraToUserInput(){
+
+        List<Address> addresses = null;
+        try {
+            addresses = mGeocoder.getFromLocationName(addressText.getText().toString(),5);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if(addresses.size() > 0)
+        {
+            LatLng inputLocation = new LatLng(addresses.get(0).getLatitude(),addresses.get(0).getLongitude());
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(inputLocation, 16.0f));
+            addressText.setText(addresses.get(0).getAddressLine(0));
+        }
+        else
+        {
+            AlertDialog.Builder adb = new AlertDialog.Builder(this);
+            adb.setTitle("Invalid Location");
+            adb.setMessage("Please Provide the Proper Place");
+            adb.setPositiveButton("OK",null);
+            adb.show();
+        }
+
     }
 
     public void swapView(int v) {

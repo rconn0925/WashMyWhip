@@ -186,6 +186,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             focusView.requestFocus();
         } else {
 
+            if(mPasswordView.hasFocus()){
+                hideKeyboard(mPasswordView);
+            } else if(mUsernameView.hasFocus()){
+                hideKeyboard(mUsernameView);
+            }
 
             Log.d("lolz", mUsernameView.getText().toString() + " "+  mPasswordView.getText().toString());
 
@@ -278,12 +283,22 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 @Override
                 public void failure(RetrofitError error) {
                     Log.d("HERPDERP", "RETROFIT ERROR: " + error);
-                    //TODO: Handle login failure
                     //DONT DO THIS!! THIS IS BAD. Just a toast and reset the username and password field.
                     //ERROR message: bad connection? bad username? bad password?
-                    startActivity(redo);
-                    //TOAST failure
-                    finish();
+                    final AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                    builder.setTitle("Error logging in");
+                    builder.setMessage("Please try again!");
+                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.cancel();
+                        }
+                    });
+                    builder.show();
+
+                    mPasswordView.setText("");
+                    mUsernameView.setText("");
+
                 }
             });
         }
