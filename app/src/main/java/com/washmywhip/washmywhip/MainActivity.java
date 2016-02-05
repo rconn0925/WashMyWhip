@@ -5,6 +5,8 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.location.Address;
@@ -12,6 +14,7 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -62,6 +65,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     private UserState userState;
     private Fragment currentFragment;
     private LatLng currentLocation;
+    private SharedPreferences mSharedPreferences;
 
     private GoogleMap.OnMyLocationChangeListener myLocationChangeListener = new GoogleMap.OnMyLocationChangeListener() {
         @Override
@@ -165,12 +169,14 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         currentFragment = null;
         setSupportActionBar(toolbar);
 
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        navigationOptions = new String[]{"Wash My Whip", "Profile", "Payment", "About"};
+        navigationOptions = new String[]{"Wash My Whip", "Profile", "Payment", "About", "Sign out"};
         initDrawer();
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
@@ -486,6 +492,10 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
             mapFragment.getView().setVisibility(View.INVISIBLE);
             removeCurrentStateView();
             cancelButton.setVisibility(View.GONE);
+        } else if(position == 4) {
+            //log out
+            attemptLogout();
+
         }
 
         // Insert the fragment by replacing any existing fragment
@@ -496,6 +506,14 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         // Highlight the selected item, update the title, and close the drawer
         navDrawerList.setItemChecked(position, true);
         mDrawerLayout.closeDrawer(navDrawerList);
+    }
+
+    private void attemptLogout() {
+        //check sharedPreferences for userstate... if passed arrived cannot log out
+        mSharedPreferences.edit().clear().commit();
+        Intent i = new Intent(this,LoginActivity.class);
+        startActivity(i);
+        finish();
     }
 
     /** calculates the distance between two locations in MILES */

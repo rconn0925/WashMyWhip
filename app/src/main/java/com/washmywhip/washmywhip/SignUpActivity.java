@@ -1,15 +1,20 @@
 package com.washmywhip.washmywhip;
 
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -18,7 +23,7 @@ import retrofit.RetrofitError;
 import retrofit.client.Response;
 import retrofit.mime.TypedByteArray;
 
-public class SignUpActivity extends AppCompatActivity implements View.OnClickListener{
+public class SignUpActivity extends AppCompatActivity implements View.OnClickListener, View.OnTouchListener {
 
 
     @InjectView(R.id.signupSignup)
@@ -39,8 +44,12 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
     EditText firstName;
     @InjectView(R.id.lastNameSignup)
     EditText lastName;
+    @InjectView(R.id.signUpLayout)
+    RelativeLayout mView;
+
 
     EditText[] fields;
+    Context mContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +58,9 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         ButterKnife.inject(this);
         singup.setOnClickListener(this);
         cancel.setOnClickListener(this);
+        mView.setOnTouchListener(this);
         fields = new EditText[]{username,password,reenterPassword,email,phone,firstName,lastName};
+        mContext= this;
     }
 
     public boolean validateInput(){
@@ -112,6 +123,16 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                     @Override
                     public void failure(RetrofitError error) {
                         Log.d("createUSER", "CREATE user FAIL", error);
+                        final AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                        builder.setTitle("Error creating account");
+                        builder.setMessage(error.getMessage());
+                        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.cancel();
+                            }
+                        });
+                        builder.show();
                     }
                 });
     }
@@ -131,5 +152,25 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
             finish();
         }
 
+    }
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        if(v.getId() == mView.getId()){
+            for (EditText field:fields){
+                if(field.hasFocus()){
+                    hideKeyboard(field);
+                }
+            }
+        }
+        return true;
+    }
+    public void hideKeyboard(View view) {
+        InputMethodManager inputMethodManager =(InputMethodManager)getSystemService(Activity.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+    public void showKeyboard(View view) {
+        InputMethodManager inputMethodManager =(InputMethodManager)getSystemService(Activity.INPUT_METHOD_SERVICE);
+        inputMethodManager.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT);
     }
 }

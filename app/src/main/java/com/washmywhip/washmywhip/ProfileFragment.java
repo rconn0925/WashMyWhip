@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
@@ -18,6 +19,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -68,7 +70,8 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
     @InjectView(R.id.addCar)
     RelativeLayout addCar;
 
-
+    @InjectView(R.id.signOutButton)
+    Button signOutButton;
 
     KeyListener defaultKeyListener;
 
@@ -147,6 +150,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         editButton = (TextView) getActivity().findViewById(R.id.cancelToolbarButton);
         editButton.setOnClickListener(this);
 
+        signOutButton.setOnClickListener(this);
         addCar.setOnClickListener(this);
 
         mLayoutManager = new GridLayoutManager(getActivity(), 1);
@@ -226,7 +230,15 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
             Fragment addCarFragment = AddCarFragment.newInstance();
             FragmentManager fragmentManager = getFragmentManager();
             fragmentManager.beginTransaction().replace(R.id.contentFrame, addCarFragment).commit();
+        } else if(v.getId() == signOutButton.getId()) {
+            attemptLogout();
         }
+    }
+
+    private void attemptLogout() {
+
+
+
     }
 
     /**
