@@ -1,14 +1,17 @@
 package com.washmywhip.washmywhip;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -21,6 +24,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -54,6 +58,10 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
 
     String first, last, email, phone;
 
+
+
+    @InjectView(R.id.pictureProfile)
+    ImageView profilePicture;
     @InjectView(R.id.firstNameProfile)
     EditText firstNameEditText;
     @InjectView(R.id.lastNameProfile)
@@ -69,9 +77,6 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
 
     @InjectView(R.id.addCar)
     RelativeLayout addCar;
-
-    @InjectView(R.id.signOutButton)
-    Button signOutButton;
 
     KeyListener defaultKeyListener;
 
@@ -150,7 +155,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         editButton = (TextView) getActivity().findViewById(R.id.cancelToolbarButton);
         editButton.setOnClickListener(this);
 
-        signOutButton.setOnClickListener(this);
+        profilePicture.setOnClickListener(this);
         addCar.setOnClickListener(this);
 
         mLayoutManager = new GridLayoutManager(getActivity(), 1);
@@ -230,15 +235,38 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
             Fragment addCarFragment = AddCarFragment.newInstance();
             FragmentManager fragmentManager = getFragmentManager();
             fragmentManager.beginTransaction().replace(R.id.contentFrame, addCarFragment).commit();
-        } else if(v.getId() == signOutButton.getId()) {
-            attemptLogout();
+        }  else if(v.getId()==profilePicture.getId()){
+            selectImage();
         }
     }
 
-    private void attemptLogout() {
 
 
+    private void selectImage() {
+        final CharSequence[] items = { "Take Photo", "Choose from Library", "Cancel" };
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle("Add Photo!");
+        builder.setItems(items, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int item) {
+                if (items[item].equals("Take Photo")) {
+                    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    //0 is request code
+                    startActivityForResult(intent, 0);
+                } else if (items[item].equals("Choose from Library")) {
+                    Intent intent = new Intent(
+                            Intent.ACTION_PICK,
+                            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    intent.setType("image/*");
 
+                    startActivityForResult(
+                            Intent.createChooser(intent, "Select File"), 1);
+                } else if (items[item].equals("Cancel")) {
+                    dialog.dismiss();
+                }
+            }
+        });
+        builder.show();
     }
 
     /**

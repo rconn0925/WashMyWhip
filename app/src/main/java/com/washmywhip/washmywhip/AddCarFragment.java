@@ -6,15 +6,36 @@ import android.app.FragmentManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.AssetManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
+
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -34,18 +55,33 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
     private String carPlate;
     private int carPic;
 
+    private AdapterView.OnItemSelectedListener selectionListener = new AdapterView.OnItemSelectedListener() {
+        @Override
+        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+            Log.d("item", (String) parent.getItemAtPosition(position));
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> parent) {
+
+        }
+    };
+
+
     @InjectView(R.id.addCarPicture)
     ImageView carImage;
     @InjectView(R.id.addCarColor)
     EditText colorEditText;
     @InjectView(R.id.addCarMake)
-    EditText makeEditText;
+    Spinner makeDropdown;
     @InjectView(R.id.addCarModel)
-    EditText modelEditText;
+    Spinner modelDropdown;
     @InjectView(R.id.addCarPlate)
     EditText plateEditText;
     @InjectView(R.id.saveCar)
     Button saveButton;
+
+    Map<String,String[]> carData = new HashMap<>();
 
     private OnFragmentInteractionListener mListener;
 
@@ -90,6 +126,7 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
             carPlate = getArguments().getString(PLATE);
             carPic = getArguments().getInt(PIC);
         }
+        parseCarXML();
     }
 
     @Override
@@ -99,7 +136,12 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
         View v = inflater.inflate(R.layout.fragment_add_car, container, false);
         ButterKnife.inject(this, v);
 
+        initMakeList();
+        initModelList();
+
         saveButton.setOnClickListener(this);
+        carImage.setOnClickListener(this);
+
 
         return v;
     }
@@ -139,7 +181,7 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
             fragmentManager.beginTransaction().replace(R.id.contentFrame, profileFragment).commit();
 
         } else if (v.getId() == carImage.getId()){
-            //selectImage();
+            selectImage();
         }
     }
 
@@ -159,6 +201,8 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
                             Intent.ACTION_PICK,
                             android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                     intent.setType("image/*");
+                    //Bundle data = intent.getExtras();
+                    //data.get
 
                     startActivityForResult(
                             Intent.createChooser(intent, "Select File"), 1);
@@ -169,6 +213,78 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
         });
         builder.show();
     }
+
+    public void parseCarXML(){
+        //Get Document Builder
+        AssetManager assetManager = getActivity().getAssets();
+        InputStream instream = null;
+        try {
+            instream = assetManager.open("cars.xml");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = null;
+        try {
+            builder = factory.newDocumentBuilder();
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        }
+        //Build Document
+        Document document = null;
+        if(instream!=null){
+            try {
+                document = builder.parse(instream);
+            } catch (SAXException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            //Normalize the XML Structure; It's just too important !!
+            document.getDocumentElement().normalize();
+
+            //Here comes the root node
+            Element root = document.getDocumentElement();
+
+            //Get all employees
+            NodeList mModelList = document.getElementsByTagName("carmodellist");
+            NodeList mCarList = document.getElementsByTagName("carname");
+            Log.d("lolz", ""+mModelList.getLength());
+            for(int i = 0; i < mModelList.getLength();i++){
+                String info = mModelList.item(i).getTextContent();
+                String key = mCarList.item(i).getNodeValue();
+                Log.d("LOLz",key + ", "+ info);
+
+
+                String[] elems = info.split("\n");
+                for(int k = 0; k<elems.length;k++){
+                    elems[k]= elems[k].trim();
+                    Log.d("LOLz",elems[k]);
+                    carData.put(key,elems);
+                }
+            }
+        } else {
+            Log.d("lolz", "inputstream is null");
+        }
+
+    }
+
+
+    public void initMakeList(){
+        String[] items = new String[] { "AC", "Acura", "Alfa Romeo" };
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, items);
+        makeDropdown.setAdapter(adapter);
+        makeDropdown.setOnItemSelectedListener(selectionListener);
+
+    }
+    public void initModelList(){
+        String[] items = new String[] { "TEst1", "test2", "test3" };
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, items);
+        modelDropdown.setAdapter(adapter);
+        modelDropdown.setOnItemSelectedListener(selectionListener);
+    }
+
 
 
     /**

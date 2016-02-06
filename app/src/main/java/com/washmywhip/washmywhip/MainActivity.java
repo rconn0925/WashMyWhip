@@ -69,6 +69,8 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     private LatLng currentLocation;
     private SharedPreferences mSharedPreferences;
     private Geocoder mGeocoder;
+    private String mAddress;
+    private static final String SET_LOCATION = "Set Location";
 
     private GoogleMap.OnMyLocationChangeListener myLocationChangeListener = new GoogleMap.OnMyLocationChangeListener() {
         @Override
@@ -92,12 +94,12 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         }
     };
 
+
     private GoogleMap.OnCameraChangeListener myCameraChangeListener = new GoogleMap.OnCameraChangeListener() {
         @Override
         public void onCameraChange(CameraPosition cameraPosition) {
 
-            String mAddress = "";
-            Geocoder mGeocoder = new Geocoder(MainActivity.this);
+            //mGeocoder = new Geocoder(MainActivity.this);
             LatLng cameraLocation = cameraPosition.target;
             try {
                 List<Address> addressList = mGeocoder.getFromLocation(cameraLocation.latitude, cameraLocation.longitude, 1);
@@ -106,6 +108,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
                     String city = addressList.get(0).getAddressLine(1);
                     String country = addressList.get(0).getAddressLine(2);
                     mAddress = address + " " + city + ", " + country;
+
                     addressText.setText(mAddress);
                     if(addressText.hasFocus()){
                         hideKeyboard(addressText);
@@ -295,7 +298,10 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         } catch (IOException e) {
             e.printStackTrace();
         }
-        if(addresses.size() > 0)
+        if(addresses == null){
+
+        }
+        else if(addresses.size() > 0)
         {
             LatLng inputLocation = new LatLng(addresses.get(0).getLatitude(),addresses.get(0).getLongitude());
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(inputLocation, 16.0f));
