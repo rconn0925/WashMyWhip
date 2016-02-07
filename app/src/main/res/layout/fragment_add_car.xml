@@ -27,18 +27,18 @@
         <Spinner
             android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:id="@+id/addCarModel"
+            android:id="@+id/addCarMake"
             android:layout_gravity="center_horizontal"
             android:background="@drawable/rounded_corner"
-            android:layout_marginTop="10dp"/>
+            android:layout_marginTop="10dp" />
 
         <Spinner
             android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:id="@+id/addCarMake"
+            android:id="@+id/addCarModel"
             android:layout_gravity="center_horizontal"
             android:background="@drawable/rounded_corner"
-            android:layout_marginTop="10dp"/>
+            android:layout_marginTop="10dp" />
 
         <EditText
             android:layout_width="match_parent"

@@ -30,8 +30,12 @@ import org.xml.sax.SAXException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -55,17 +59,7 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
     private String carPlate;
     private int carPic;
 
-    private AdapterView.OnItemSelectedListener selectionListener = new AdapterView.OnItemSelectedListener() {
-        @Override
-        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-            Log.d("item", (String) parent.getItemAtPosition(position));
-        }
-
-        @Override
-        public void onNothingSelected(AdapterView<?> parent) {
-
-        }
-    };
+    private int index = -1;
 
 
     @InjectView(R.id.addCarPicture)
@@ -137,7 +131,6 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
         ButterKnife.inject(this, v);
 
         initMakeList();
-        initModelList();
 
         saveButton.setOnClickListener(this);
         carImage.setOnClickListener(this);
@@ -250,17 +243,13 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
             //Get all employees
             NodeList mModelList = document.getElementsByTagName("carmodellist");
             NodeList mCarList = document.getElementsByTagName("carname");
-            Log.d("lolz", ""+mModelList.getLength());
             for(int i = 0; i < mModelList.getLength();i++){
                 String info = mModelList.item(i).getTextContent();
-                String key = mCarList.item(i).getNodeValue();
-                Log.d("LOLz",key + ", "+ info);
-
+                String key = mCarList.item(i).getTextContent();
 
                 String[] elems = info.split("\n");
                 for(int k = 0; k<elems.length;k++){
                     elems[k]= elems[k].trim();
-                    Log.d("LOLz",elems[k]);
                     carData.put(key,elems);
                 }
             }
@@ -272,17 +261,60 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
 
 
     public void initMakeList(){
-        String[] items = new String[] { "AC", "Acura", "Alfa Romeo" };
+        String[] elems = carData.keySet().toArray(new String[carData.size()]);
+        Arrays.sort(elems);
+        final String[] items = elems;
+        //List<String> list = new LinkedList<String>(Arrays.asList(items));
+      //  list.add(0, "Select Make");
+       // items = list.toArray(new String[list.size()]);
+       // makeDropdown.setPrompt("Select Make");
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, items);
-        makeDropdown.setAdapter(adapter);
-        makeDropdown.setOnItemSelectedListener(selectionListener);
+        makeDropdown.setAdapter(new NothingSelectedSpinnerAdapter(adapter,R.layout.car_make,getActivity()));
+        makeDropdown.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+               // Log.d("item", (String) parent.getItemAtPosition(position));
+                index = position;
+                if(index>0){
+                    carMake =  items[position-1];
+                    Log.d("addCar","carMake: " + carMake);
+                }
+                initModelList();
+            }
 
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
     }
     public void initModelList(){
-        String[] items = new String[] { "TEst1", "test2", "test3" };
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, items);
-        modelDropdown.setAdapter(adapter);
-        modelDropdown.setOnItemSelectedListener(selectionListener);
+        if(index>0){
+            String [] keySet = carData.keySet().toArray(new String[carData.size()]);
+            Arrays.sort(keySet);
+            final String[] items = carData.get(keySet[index-1]);
+            final String[] newItems = Arrays.copyOfRange(items, 1, items.length-1);
+            ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, newItems);
+            modelDropdown.setAdapter(new NothingSelectedSpinnerAdapter(adapter, R.layout.car_model,getActivity()));
+            modelDropdown.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
+                    if(position>0) {
+                        carModel = items[position];
+                        Log.d("addCar", "careModel: " + carModel);
+                    }
+                }
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+                }
+            });
+        } else if (index == 0){
+            ArrayAdapter adapter = new ArrayAdapter<String>(getActivity(),R.layout.car_model,new String[]{"Please select a make first"});
+            modelDropdown.setAdapter(new NothingSelectedSpinnerAdapter(adapter, R.layout.car_model,getActivity()));
+            modelDropdown.setOnItemSelectedListener(null);
+            Log.d("addCar","this is gheto");
+        }
     }
 
 
