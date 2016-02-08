@@ -7,22 +7,24 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:id="@+id/addCarFragment">
+    android:id="@+id/addCarFragment"
+    android:scrollbars="vertical">
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:orientation="vertical"
-        android:layout_width="282dp"
+        android:layout_width="250dp"
         android:layout_height="match_parent"
         android:layout_gravity="center">
 
         <ImageView
             android:layout_width="250dp"
-            android:layout_height="100dp"
+            android:layout_height="150dp"
             android:id="@+id/addCarPicture"
             android:layout_gravity="center_horizontal"
             android:clickable="true"
             android:onClick="onClick"
-            android:src="@drawable/carplaceholder"/>
+            android:src="@drawable/carplaceholder"
+            android:scaleType="fitXY"/>
 
         <Spinner
             android:layout_width="match_parent"

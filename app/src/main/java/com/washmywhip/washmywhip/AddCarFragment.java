@@ -7,6 +7,13 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -57,9 +64,11 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
     private String carModel;
     private String carColor;
     private String carPlate;
-    private int carPic;
+    private String carPic;
 
     private int index = -1;
+    private int camera_request = 0;
+    private int storage_request = 0;
 
 
     @InjectView(R.id.addCarPicture)
@@ -118,7 +127,7 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
             carModel = getArguments().getString(MODEL);
             carColor = getArguments().getString(COLOR);
             carPlate = getArguments().getString(PLATE);
-            carPic = getArguments().getInt(PIC);
+            carPic = getArguments().getString(PIC);
         }
         parseCarXML();
     }
@@ -169,12 +178,64 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
         if(v.getId() == saveButton.getId()) {
             //Pop up succuss or failure
 
-            Fragment profileFragment = ProfileFragment.newInstance();
-            FragmentManager fragmentManager = getFragmentManager();
-            fragmentManager.beginTransaction().replace(R.id.contentFrame, profileFragment).commit();
+            //validate input info
+
+
+            carColor = colorEditText.getText().toString();
+            carPlate = plateEditText.getText().toString();
+
+            if(carColor ==null||carPlate ==null||carModel==null||carMake==null
+                    || carColor.equals("")||carPlate.equals("")||carModel.equals("")
+                    ||carMake.equals("")||carPic == null||carPic.equals("")){
+
+                //ALERT FAILURE
+                Log.d("addCar","add car failure... need to enter all the info");
+                final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setTitle("Error ading car");
+                builder.setMessage("Please enter all the info and try again!");
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+                builder.show();
+
+            } else {
+
+               // Car newCar = new Car();
+
+
+                //submit car data to server, and save into shared preferences
+                Fragment profileFragment = ProfileFragment.newInstance();
+                FragmentManager fragmentManager = getFragmentManager();
+                fragmentManager.beginTransaction().replace(R.id.contentFrame, profileFragment).commit();
+            }
 
         } else if (v.getId() == carImage.getId()){
             selectImage();
+        }
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if(data!=null) {
+            Log.d("BLAHBLAH", "requestCode: " + requestCode + " ResultCode: " + requestCode + " Data: " + data.getDataString());
+            super.onActivityResult(requestCode, resultCode, data);
+
+            if (requestCode == camera_request) {
+                Uri photoUri = data.getData();
+                Log.d("BLAHBLAH", "uri: " + photoUri.toString());
+                //Bitmap photo = (Bitmap) data.getExtras().get("data");
+                Bitmap selectedImage = null;
+                try {
+                    selectedImage = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), photoUri);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                carPic = photoUri.toString();
+                carImage.setImageBitmap(getRoundedCornerImage(selectedImage));
+            }
         }
     }
 
@@ -188,7 +249,7 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
                 if (items[item].equals("Take Photo")) {
                     Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                     //0 is request code
-                    startActivityForResult(intent, 0);
+                    startActivityForResult(intent, camera_request);
                 } else if (items[item].equals("Choose from Library")) {
                     Intent intent = new Intent(
                             Intent.ACTION_PICK,
@@ -198,7 +259,7 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
                     //data.get
 
                     startActivityForResult(
-                            Intent.createChooser(intent, "Select File"), 1);
+                            Intent.createChooser(intent, "Select File"), storage_request);
                 } else if (items[item].equals("Cancel")) {
                     dialog.dismiss();
                 }
@@ -206,6 +267,30 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
         });
         builder.show();
     }
+
+    public static Bitmap getRoundedCornerImage(Bitmap bitmap) {
+        Bitmap output = Bitmap.createBitmap(bitmap.getWidth(),
+                bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(output);
+
+        final int color = 0xff424242;
+        final Paint paint = new Paint();
+        final Rect rect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+        final RectF rectF = new RectF(rect);
+        final float roundPx = 100;
+
+        paint.setAntiAlias(true);
+        canvas.drawARGB(0, 0, 0, 0);
+        paint.setColor(color);
+        canvas.drawRoundRect(rectF, roundPx, roundPx, paint);
+
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+        canvas.drawBitmap(bitmap, rect, rect, paint);
+
+        return output;
+
+    }
+
 
     public void parseCarXML(){
         //Get Document Builder

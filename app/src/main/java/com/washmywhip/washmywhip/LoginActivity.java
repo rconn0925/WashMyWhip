@@ -268,10 +268,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     }
                     else{
 
-
                         SharedPreferences.Editor editor = mSharedPreferences.edit();
                         for (String s : userInfo.keySet()) {
-                            Log.d("SHARED PREFS", s+" , "+userInfo.get(s));
+                            Log.d("thisismytag", s+" , "+userInfo.get(s));
                             editor.putString(s,userInfo.get(s));
                         }
                         editor.commit();
