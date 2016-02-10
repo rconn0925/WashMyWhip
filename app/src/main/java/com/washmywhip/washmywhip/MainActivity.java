@@ -203,9 +203,6 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
                 Log.d(TAG, "edir text focus: " + hasFocus);
             }
         });
-        if(addressText.hasFocus()){
-            hideKeyboard(addressText);
-        }
     }
 
 
@@ -269,6 +266,9 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         mMap.setOnMyLocationChangeListener(myLocationChangeListener);
         mMap.setOnCameraChangeListener(myCameraChangeListener);
         mMap.setOnMapClickListener(myMapClickListener);
+        if(addressText.hasFocus()){
+            hideKeyboard(addressText);
+        }
     }
 
 
@@ -527,6 +527,9 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
 
         }
 
+        if(addressText.hasFocus()){
+            hideKeyboard(addressText);
+        }
         // Insert the fragment by replacing any existing fragment
         FragmentManager fragmentManager = getFragmentManager();
         if(currentFragment!=null){

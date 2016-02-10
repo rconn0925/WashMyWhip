@@ -95,7 +95,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         loginLayout = (RelativeLayout) findViewById(R.id.loginLayout);
         logIn.setOnClickListener(this);
         cancel.setOnClickListener(this);
-        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         mPasswordView = (EditText) findViewById(R.id.passwordField);
        // mPasswordView.setFocusable(true);
@@ -194,10 +194,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
             Log.d("lolz", mUsernameView.getText().toString() + " "+  mPasswordView.getText().toString());
 
-            final LoginEngine mLoginEngine = new LoginEngine();
+            final WashMyWhipEngine mEngine = new WashMyWhipEngine();
             final Intent i = new Intent(this, MainActivity.class);
             final Intent redo = new Intent(this,LoginActivity.class);
-            mLoginEngine.requestUserLogin(mUsernameView.getText().toString(), mPasswordView.getText().toString(), new Callback<JSONObject>() {
+            mEngine.requestUserLogin(mUsernameView.getText().toString(), mPasswordView.getText().toString(), new Callback<JSONObject>() {
                 @Override
                 public void success(JSONObject jsonObject, Response response) {
                     Log.d("THUGLYFE", "successful user login");
@@ -235,7 +235,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                                 // get user input and send new password to server
 
                                                 //result.setText(userInput.getText());
-                                                mLoginEngine.updateUserPassword(mUsernameView.getText().toString(),  userInput.getText().toString(), new Callback<JSONObject>() {
+                                                mEngine.updateUserPassword(mUsernameView.getText().toString(),  userInput.getText().toString(), new Callback<JSONObject>() {
                                                     @Override
                                                     public void success(JSONObject jsonObject, Response response) {
                                                         String responseString = new String(((TypedByteArray) response.getBody()).getBytes());
@@ -272,6 +272,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         for (String s : userInfo.keySet()) {
                             Log.d("thisismytag", s+" , "+userInfo.get(s));
                             editor.putString(s,userInfo.get(s));
+                        }
+                        if(mPasswordView.hasFocus()){
+                            hideKeyboard(mPasswordView);
+                        }
+                        if(mUsernameView.hasFocus()){
+                            hideKeyboard(mUsernameView);
                         }
                         editor.commit();
                         startActivity(i);

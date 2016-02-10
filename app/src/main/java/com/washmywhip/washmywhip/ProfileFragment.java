@@ -28,10 +28,21 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
+import retrofit.mime.TypedByteArray;
 
 
 /**
@@ -80,9 +91,13 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
 
     KeyListener defaultKeyListener;
 
+    private ArrayList<Car> mCars;
 
     private GridLayoutManager mLayoutManager;
     private CarAdapter mCarAdapter;
+    private WashMyWhipEngine mWashMyWhipEngine;
+
+
     @InjectView(R.id.carGridView)
     RecyclerView mView;
 
@@ -98,15 +113,24 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         return fragment;
     }
 
+    public static Fragment newInstance(ArrayList<Car> cars) {
+        ProfileFragment fragment = new ProfileFragment();
+        Bundle args = new Bundle();
+        args.putSerializable("cars",cars);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
+           // mCars = (ArrayList<Car>) getArguments().getSerializable("cars");
         }
-
-
+        //get car list from server
     }
 
     public void initEditable(){
@@ -150,8 +174,10 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_profile, container, false);
-        ButterKnife.inject(this,v);
+        ButterKnife.inject(this, v);
 
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
+        mWashMyWhipEngine = new WashMyWhipEngine();
         editButton = (TextView) getActivity().findViewById(R.id.cancelToolbarButton);
         editButton.setOnClickListener(this);
 
@@ -163,14 +189,9 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         mCarAdapter = new CarAdapter(getActivity(),new ArrayList<Car>());
         mView.setAdapter(mCarAdapter);
 
-        mCarAdapter.add(new Car(1, 2, "TestColor", "TestMake", "TestModel", "TestPlate", R.drawable.carsample));
-        mCarAdapter.add(new Car(1, 2, "TestColor", "TestMake", "TestModel", "TestPlate", R.drawable.carsample));
-        mCarAdapter.add(new Car(1, 2, "TestColor", "TestMake", "TestModel", "TestPlate", R.drawable.carsample));
-        mCarAdapter.add(new Car(1, 2, "TestColor", "TestMake", "TestModel", "TestPlate", R.drawable.carsample));
-        mCarAdapter.add(new Car(1, 2, "TestColor", "TestMake", "TestModel", "TestPlate", R.drawable.carsample));
-        mCarAdapter.add(new Car(1, 2, "TestColor", "TestMake", "TestModel", "TestPlate", R.drawable.carsample));
 
-        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
+        addCarsToView();
+
 
         first = mSharedPreferences.getString("FirstName", "");
         last = mSharedPreferences.getString("LastName","");
@@ -192,6 +213,48 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         return v;
     }
 
+    public void addCarsToView(){
+        int userIDnum = Integer.parseInt(mSharedPreferences.getString("UserID", "-1"));
+        final ArrayList<Car> theCars = new ArrayList<Car>();
+        if (userIDnum >= 0) {
+            mWashMyWhipEngine.getCars(userIDnum, new Callback<List<JSONObject>>() {
+                @Override
+                public void success(List<JSONObject> jsonObject, Response response) {
+
+                    String responseString = new String(((TypedByteArray) response.getBody()).getBytes());
+                    //responseString = responseString.replace("[","{").replace("]","}");
+                    JSONArray mArray = null;
+                    try {
+                        mArray = new JSONArray(responseString);
+                        // JSONArray jsonArray = mArray.getJSONArray("Cars");
+                        for (int i = 0; i < mArray.length(); i++) {
+                            JSONObject car = mArray.getJSONObject(i);
+                            Car newCar = new Car(car);
+                            theCars.add(newCar);
+                            Log.d("getCars", " car: " + car.toString());
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    mCars = theCars;
+                    if(mCars!=null){
+                        if(mCars.size()>0){
+                            for(int i = 0; i< mCars.size();i++){
+                                mCarAdapter.add(mCars.get(i));
+                            }
+                        }
+                    }
+                }
+
+                @Override
+                public void failure(RetrofitError error) {
+                    Log.d("getCars","error: "+ error.toString());
+                }
+            });
+        }
+    }
+
+
     // TODO: Rename method, update argument and hook method into UI event
     public void onButtonPressed(Uri uri) {
         if (mListener != null) {
@@ -212,6 +275,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
 
     @Override
     public void onDetach() {
+        Log.d("PROFILE","Detatching");
         super.onDetach();
         mListener = null;
     }

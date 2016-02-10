@@ -1,11 +1,13 @@
 package com.washmywhip.washmywhip;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -16,11 +18,13 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -29,6 +33,9 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -37,8 +44,11 @@ import org.xml.sax.SAXException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +60,10 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
+import retrofit.mime.TypedByteArray;
 
 
 public class AddCarFragment extends Fragment implements View.OnClickListener{
@@ -85,6 +99,10 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
     Button saveButton;
 
     Map<String,String[]> carData = new HashMap<>();
+    ArrayList<Car> mCars;
+
+    private SharedPreferences mSharedPreferences;
+    private WashMyWhipEngine mWashMyWhipEngine;
 
     private OnFragmentInteractionListener mListener;
 
@@ -130,12 +148,21 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
             carPic = getArguments().getString(PIC);
         }
         parseCarXML();
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
+        mWashMyWhipEngine = new WashMyWhipEngine();
+        mCars = new ArrayList<>();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
+
+
+
+
+
+
         View v = inflater.inflate(R.layout.fragment_add_car, container, false);
         ButterKnife.inject(this, v);
 
@@ -203,13 +230,40 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
 
             } else {
 
-               // Car newCar = new Car();
+                String userID =  mSharedPreferences.getString("UserID", null);
+                //get cars to find car number
+                if(userID!=null){
+                    final int userIDnum = Integer.parseInt(userID);
+
+                    mWashMyWhipEngine.createCar(userIDnum, carColor, carMake, carModel, carPlate, true, new Callback<String>() {
+                        @Override
+                        public void success(String jsonObject, Response response) {
+                            String responseString = new String(((TypedByteArray) response.getBody()).getBytes());
+                            Log.d("CREATEcar",responseString);
+                        }
+
+                        @Override
+                        public void failure(RetrofitError error) {
+                            Log.d("CREATEcar",error.toString());
+                        }
+                    });
+                    //Car createdCar = new Car();
+                    //submit car data to server, and save into shared preferences
 
 
-                //submit car data to server, and save into shared preferences
-                Fragment profileFragment = ProfileFragment.newInstance();
-                FragmentManager fragmentManager = getFragmentManager();
-                fragmentManager.beginTransaction().replace(R.id.contentFrame, profileFragment).commit();
+                    EditText[] fields = {plateEditText,colorEditText};
+                    for(EditText field:fields){
+                        if(field.hasFocus()){
+                            hideKeyboard(field);
+                        }
+                    }
+
+                    Fragment profileFragment = ProfileFragment.newInstance();
+                    FragmentManager fragmentManager = getFragmentManager();
+                    fragmentManager.beginTransaction().replace(R.id.contentFrame, profileFragment).commit();
+
+
+                }
             }
 
         } else if (v.getId() == carImage.getId()){
@@ -217,6 +271,16 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
         }
     }
 
+    public ArrayList<Car> readCarJSON(String s){
+        ArrayList<Car> list = new ArrayList<>();
+
+        String [] elements = s.split("'}'");
+        Log.d("CARSnum","num cars: " + elements.length);
+
+        return list;
+    }
+
+    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         if(data!=null) {
@@ -238,6 +302,7 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
             }
         }
     }
+
 
     private void selectImage() {
         final CharSequence[] items = { "Take Photo", "Choose from Library", "Cancel" };
@@ -288,7 +353,6 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
         canvas.drawBitmap(bitmap, rect, rect, paint);
 
         return output;
-
     }
 
 
@@ -322,9 +386,6 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
             //Normalize the XML Structure; It's just too important !!
             document.getDocumentElement().normalize();
 
-            //Here comes the root node
-            Element root = document.getDocumentElement();
-
             //Get all employees
             NodeList mModelList = document.getElementsByTagName("carmodellist");
             NodeList mCarList = document.getElementsByTagName("carname");
@@ -354,15 +415,15 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
        // items = list.toArray(new String[list.size()]);
        // makeDropdown.setPrompt("Select Make");
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, items);
-        makeDropdown.setAdapter(new NothingSelectedSpinnerAdapter(adapter,R.layout.car_make,getActivity()));
+        makeDropdown.setAdapter(new NothingSelectedSpinnerAdapter(adapter, R.layout.car_make, getActivity()));
         makeDropdown.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-               // Log.d("item", (String) parent.getItemAtPosition(position));
+                // Log.d("item", (String) parent.getItemAtPosition(position));
                 index = position;
-                if(index>0){
-                    carMake =  items[position-1];
-                    Log.d("addCar","carMake: " + carMake);
+                if (index > 0) {
+                    carMake = items[position - 1];
+                    Log.d("addCar", "carMake: " + carMake);
                 }
                 initModelList();
             }
@@ -378,7 +439,7 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
             String [] keySet = carData.keySet().toArray(new String[carData.size()]);
             Arrays.sort(keySet);
             final String[] items = carData.get(keySet[index-1]);
-            final String[] newItems = Arrays.copyOfRange(items, 1, items.length-1);
+            final String[] newItems = Arrays.copyOfRange(items, 1, items.length - 1);
             ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, newItems);
             modelDropdown.setAdapter(new NothingSelectedSpinnerAdapter(adapter, R.layout.car_model,getActivity()));
             modelDropdown.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -402,7 +463,14 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
         }
     }
 
-
+    public void hideKeyboard(View view) {
+        InputMethodManager inputMethodManager =(InputMethodManager)getActivity().getSystemService(Activity.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+    public void showKeyboard(View view) {
+        InputMethodManager inputMethodManager =(InputMethodManager)getActivity().getSystemService(Activity.INPUT_METHOD_SERVICE);
+        inputMethodManager.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT);
+    }
 
     /**
      * This interface must be implemented by activities that contain this

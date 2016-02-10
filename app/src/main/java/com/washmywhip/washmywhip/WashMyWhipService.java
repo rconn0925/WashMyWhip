@@ -1,14 +1,20 @@
 package com.washmywhip.washmywhip;
 
-
+import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.util.List;
 
 import retrofit.Callback;
 import retrofit.http.Field;
 import retrofit.http.FormUrlEncoded;
 import retrofit.http.POST;
 
-public interface LoginService {
+/**
+ * Created by Ross on 2/8/2016.
+ */
+public interface WashMyWhipService {
+
 
     @FormUrlEncoded
     @POST("/createUser.php")
@@ -38,5 +44,31 @@ public interface LoginService {
     @FormUrlEncoded
     @POST("/requestUserLogin.php")
     void requestUserLogin(@Field("username") String username,@Field("password") String password, Callback<JSONObject> callback);
+
+
+
+
+    @FormUrlEncoded
+    @POST("/createCar.php")
+    void createCar(@Field("userID") int userID,@Field("color") String color,
+                   @Field("make") String make,@Field("model") String model,
+                   @Field("plate") String plate, @Field("hasImage") boolean hasImage,
+                   Callback<String> callback);
+
+    @FormUrlEncoded
+    @POST("/updateCar.php")
+    void updateCar(@Field("userID") int userID,@Field("color") String color,
+                   @Field("make") String make,@Field("model") String model,
+                   @Field("plate") String plate, @Field("hasImage") boolean hasImage,
+                   Callback<JSONObject> callback);
+
+
+    @FormUrlEncoded
+    @POST("/getCars.php")
+    void deleteCar(@Field("carID") int carID, Callback<String> callback);
+
+    @FormUrlEncoded
+    @POST("/getCars.php")
+    void getCars(@Field("userID") int userID, Callback<List<JSONObject>> callback);
 
 }

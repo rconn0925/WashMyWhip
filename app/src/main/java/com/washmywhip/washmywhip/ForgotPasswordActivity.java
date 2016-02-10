@@ -28,7 +28,7 @@ public class ForgotPasswordActivity extends AppCompatActivity implements View.On
     @InjectView(R.id.cancelForgotPassswordButton)
     Button cancel;
 
-    private LoginEngine mLogineEngine;
+    private WashMyWhipEngine mEngine;
     private SharedPreferences mSharedPreferences;
     private String user,pass;
 
@@ -43,7 +43,7 @@ public class ForgotPasswordActivity extends AppCompatActivity implements View.On
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         user = mSharedPreferences.getString("username", "null");
         pass = mSharedPreferences.getString("password","null");
-        mLogineEngine = new LoginEngine();
+        mEngine = new WashMyWhipEngine();
     }
 
     @Override
@@ -52,7 +52,7 @@ public class ForgotPasswordActivity extends AppCompatActivity implements View.On
         if(v.getId() == submit.getId()){
             //send temp pass to email
             //do some server shit
-            mLogineEngine.requestTemporaryPassword(email.getText().toString(), new Callback<JSONObject>() {
+            mEngine.requestTemporaryPassword(email.getText().toString(), new Callback<JSONObject>() {
                 @Override
                 public void success(JSONObject jsonObject, Response response) {
                     String responseString = new String(((TypedByteArray) response.getBody()).getBytes());

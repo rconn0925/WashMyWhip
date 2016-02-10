@@ -1,6 +1,7 @@
 package com.washmywhip.washmywhip;
 
 import android.content.Context;
+import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,7 +39,7 @@ public class CarAdapter extends RecyclerView.Adapter<CarViewHolder> {
         holder.carMake.setText(car.getMake());
         holder.carModel.setText(car.getModel());
         holder.carPlate.setText(car.getPlate());
-        holder.carPic.setImageResource(car.getPic());
+       // holder.carPic.setImageURI(Uri.parse(car.getPic()));
     }
 
     @Override

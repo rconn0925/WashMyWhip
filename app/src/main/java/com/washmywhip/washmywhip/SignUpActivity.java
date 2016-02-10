@@ -121,9 +121,9 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     public void createUser(){
-        LoginEngine mLogineEngine = new LoginEngine();
-        final Intent intent = new Intent(this, MainActivity.class);
-        mLogineEngine.createUser(username.getText().toString(), password.getText().toString(),
+        WashMyWhipEngine mEngine = new WashMyWhipEngine();
+        final Intent intent = new Intent(this, LoginActivity.class);
+        mEngine.createUser(username.getText().toString(), password.getText().toString(),
                 email.getText().toString(), firstName.getText().toString(),
                 lastName.getText().toString(), phone.getText().toString(),
                 new Callback<Integer>() {
