@@ -25,16 +25,17 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:paddingTop="10dp"
             android:layout_gravity="center"
             android:id="@+id/loginButton"
-            android:text="LOG IN"/>
+            android:text="LOG IN" />
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:id="@+id/signUpButton"
-            android:text="SIGN UP"/>
+            android:text="SIGN UP" />
 
 
     </LinearLayout>

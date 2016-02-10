@@ -22,8 +22,8 @@ public interface WashMyWhipService {
 
     //1 if successful, 0 if sql error, "Email Exists" if email already exists in the table
     @FormUrlEncoded
-    @POST("/updateUserInfo")
-    void updateUserInfo (@Field("username") int userId,@Field("username") String email, @Field("username") String firstName,@Field("username")  String lastName, @Field("username") String phoneNumber );
+    @POST("/updateUserInfo.php")
+    void updateUserInfo (@Field("userID") int userId,@Field("email") String email, @Field("firstName") String firstName,@Field("lastName")  String lastName, @Field("phone") String phoneNumber, Callback<Object> callback);
 
 
     //1 if successful, 0 if sql error
@@ -31,6 +31,10 @@ public interface WashMyWhipService {
     @POST("/updateUserPassword.php")
     void updateUserPassword (@Field("username") String username, @Field("password") String password,Callback<JSONObject> callback);
 
+    //1 if successful, 0 if sql error
+    @FormUrlEncoded
+    @POST("/getUserWithID.php")
+    void getUserWithID (@Field("userID") int userID, Callback<Object> callback);
 
 
 

@@ -39,12 +39,16 @@ public class WashMyWhipEngine {
         mService.requestTemporaryPassword(email, callback);
     }
 
+    public void getUserWithID(int userID, Callback<Object> callback) {
+        mService.getUserWithID(userID, callback);
+    }
+
     public void createUser(String username, String password, String email,String phoneNumber, String firstName, String lastName,Callback<Integer> callback) {
         mService.createUser(username, password, email, phoneNumber, firstName, lastName, callback);
     }
 
-    public void updateUserInfo(int userId, String email, String firstName, String lastName, String phoneNumber) {
-        mService.updateUserInfo(userId, email, firstName, lastName, phoneNumber);
+    public void updateUserInfo(int userId, String email, String firstName, String lastName, String phoneNumber, Callback<Object> callback) {
+        mService.updateUserInfo(userId, email, firstName, lastName, phoneNumber,callback);
     }
 
     public void updateUserPassword(String username, String password,Callback<JSONObject> callback) {

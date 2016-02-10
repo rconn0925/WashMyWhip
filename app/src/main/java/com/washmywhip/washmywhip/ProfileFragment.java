@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -33,6 +34,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -154,6 +156,9 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
                 hideKeyboard(field);
             }
         }
+
+
+
     }
 
     public void initNotEditable() {
@@ -168,6 +173,49 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         emailEditText.setEnabled(false);
         phoneEditText.setKeyListener(null);
         phoneEditText.setEnabled(false);
+
+        first = firstNameEditText.getText().toString();
+        last = lastNameEditText.getText().toString();
+        email = emailEditText.getText().toString();
+        phone = phoneEditText.getText().toString();
+
+        Log.d("updateUser", first + " " + last + " " + " " + email + " " + phone);
+        final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle("Hold on!");
+        builder.setMessage("You are requesting to update your profile information. Is all the information correct?");
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                int userid = Integer.parseInt(mSharedPreferences.getString("UserID", "-1"));
+                Log.d("updateUser", "id: " + userid);
+                mWashMyWhipEngine.updateUserInfo(userid, email, first, last, phone, new Callback<Object>() {
+                    @Override
+                    public void success(Object o, Response response) {
+                        Log.d("updateUser", "success " + o.toString());
+                        mSharedPreferences.edit().putString("FirstName", first).commit();
+                        mSharedPreferences.edit().putString("LastName", last).commit();
+                        mSharedPreferences.edit().putString("Email", email).commit();
+                        mSharedPreferences.edit().putString("Phone", phone).commit();
+
+
+                    }
+
+                    @Override
+                    public void failure(RetrofitError error) {
+                        Log.d("updateUser", "failz " + error.toString());
+                    }
+                });
+                dialog.cancel();
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener(){
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        builder.show();
+
     }
 
 
@@ -183,7 +231,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         editButton = (TextView) getActivity().findViewById(R.id.cancelToolbarButton);
         editButton.setOnClickListener(this);
 
-        profilePicture.setOnClickListener(this);
+       // profilePicture.setOnClickListener(this);
         addCar.setOnClickListener(this);
 
         mLayoutManager = new GridLayoutManager(getActivity(), 1);
@@ -235,7 +283,32 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         );
         addCarsToView();
 
+        /*
+        int userid = Integer.parseInt(mSharedPreferences.getString("UserID", "-1"));
+        mWashMyWhipEngine.getUserWithID(userid, new Callback<Object>() {
+            @Override
+            public void success(Object object, Response response) {
+                String s = object.toString();
+                Log.d("getUser", s);
 
+                String[] info = s.split(",");
+
+
+                first =info[2].replace(" FirstName=","");
+                last = info[3].replace(" LastName=","");;
+                email= info[4].replace(" Email=","");;
+                phone= info[5].replace(" Phone=","");;
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+                Log.d("getUser", error.toString());
+            }
+        });
+        */
+
+
+        //should be getting info from server, not shared prefs
         first = mSharedPreferences.getString("FirstName", "");
         last = mSharedPreferences.getString("LastName","");
         email = mSharedPreferences.getString("Email","");
@@ -249,9 +322,17 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
 
         defaultKeyListener = firstNameEditText.getKeyListener();
 
+        editButton.setText("Edit");
+        firstNameEditText.setActivated(false);
+        firstNameEditText.setKeyListener(null);
+        firstNameEditText.setEnabled(false);
+        lastNameEditText.setKeyListener(null);
+        lastNameEditText.setEnabled(false);
+        emailEditText.setKeyListener(null);
+        emailEditText.setEnabled(false);
+        phoneEditText.setKeyListener(null);
+        phoneEditText.setEnabled(false);
 
-
-        initNotEditable();
 
         return v;
     }
@@ -320,7 +401,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
 
     @Override
     public void onDetach() {
-        Log.d("PROFILE","Detatching");
+        Log.d("PROFILE", "Detatching");
         super.onDetach();
         mListener = null;
     }
@@ -349,7 +430,29 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         }
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
+        if(data!=null) {
+            Log.d("BLAHBLAH", "requestCode: " + requestCode + " ResultCode: " + requestCode + " Data: " + data.getDataString());
+            super.onActivityResult(requestCode, resultCode, data);
+
+            if (requestCode == 0||requestCode==1) {
+                Uri photoUri = data.getData();
+                Log.d("BLAHBLAH", "uri: " + photoUri.toString());
+                //Bitmap photo = (Bitmap) data.getExtras().get("data");
+                Bitmap selectedImage = null;
+                try {
+                    selectedImage = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), photoUri);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                //carPic = photoUri.toString();
+                //SCALE IMAGE DOWN
+               // profilePicture.setImageBitmap(selectedImage);
+            }
+        }
+    }
 
     private void selectImage() {
         final CharSequence[] items = { "Take Photo", "Choose from Library", "Cancel" };

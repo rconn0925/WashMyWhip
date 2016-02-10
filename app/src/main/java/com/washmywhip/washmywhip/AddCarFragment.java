@@ -31,6 +31,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 
 import org.json.JSONArray;
@@ -98,6 +99,8 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
     @InjectView(R.id.saveCar)
     Button saveButton;
 
+    TextView menuTextEdit;
+
     Map<String,String[]> carData = new HashMap<>();
     ArrayList<Car> mCars;
 
@@ -159,15 +162,14 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
         // Inflate the layout for this fragment
 
 
-
-
-
+        menuTextEdit = (TextView) getActivity().findViewById(R.id.cancelToolbarButton);
+        menuTextEdit.setText("Cancel");
+        menuTextEdit.setOnClickListener(this);
 
         View v = inflater.inflate(R.layout.fragment_add_car, container, false);
         ButterKnife.inject(this, v);
 
         initMakeList();
-
         saveButton.setOnClickListener(this);
         carImage.setOnClickListener(this);
 
@@ -268,6 +270,10 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
 
         } else if (v.getId() == carImage.getId()){
             selectImage();
+        } else if(v.getId() == menuTextEdit.getId()){
+            Fragment profileFragment = ProfileFragment.newInstance();
+            FragmentManager fragmentManager = getFragmentManager();
+            fragmentManager.beginTransaction().replace(R.id.contentFrame, profileFragment).commit();
         }
     }
 

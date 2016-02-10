@@ -167,6 +167,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         ButterKnife.inject(this);
         toolbar.setTitle("");
         currentFragment = null;
+        userState = UserState.CONFIRMING;
         setSupportActionBar(toolbar);
 
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -184,6 +185,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         mDrawerToggle.syncState();
 
         currentView = requestingLayout;
+        cancelButton.setText("");
         setLocationButton.setOnClickListener(this);
         addressText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -203,6 +205,13 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
                 Log.d(TAG, "edir text focus: " + hasFocus);
             }
         });
+    }
+
+
+    @Override
+    protected void onPostResume(){
+        Log.d("TEST", "onPostResume");
+        super.onPostResume();
     }
 
 
@@ -238,6 +247,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         Log.d("TEST", "onCreateOptionsMenu");
         // Inflate the menu; this adds items to the action bar if it is present.
         //getMenuInflater().inflate(R.menu.activity_nav_drawer_drawer, menu);
+        //initMenuTextView(userState,fra);
         return true;
     }
 
@@ -260,7 +270,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
+        Log.d("TEST","map ready");
         allowLocationServices(true);
         addressText.setText(getMyLocationAddress());
         mMap.setOnMyLocationChangeListener(myLocationChangeListener);
@@ -364,16 +374,14 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
 
 
     //might not have to use this shitttttt
-    public void initMenuTextView(UserState state, int fragmentIdentifier){
-
-        if(state == UserState.REQUESTING){
+    public void initMenuTextView(UserState state){
+        if(state == UserState.REQUESTING || state == UserState.CONFIRMING){
             //invis
             cancelButton.setVisibility(View.GONE);
         } else {
             cancelButton.setVisibility(View.VISIBLE);
             cancelButton.setText("Cancel");
         }
-
     }
 
 
@@ -496,6 +504,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
             currentFragment = new Fragment();
 
             mapFragment.getView().setVisibility(View.VISIBLE);
+            initMenuTextView(userState);
             //In the initial state, nothing to go back to
 
 
