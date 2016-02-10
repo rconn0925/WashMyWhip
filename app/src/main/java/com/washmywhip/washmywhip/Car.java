@@ -18,14 +18,16 @@ import java.util.Map;
 public class Car {
 
     private int ownerID;
+    private int carID;
     private String color;
     private String make;
     private String model;
     private String plate;
 
 
-    public Car(int ownerID, String color, String make, String model, String plate){
+    public Car(int carID, int ownerID, String color, String make, String model, String plate){
         this.ownerID = ownerID;
+        this.carID = carID;
         this.color = color;
         this.make = make;
         this.model = model;
@@ -46,6 +48,7 @@ public class Car {
             Log.d("makingCAR","key: "+ key.toString()+ "  value: " + carMap.get(key).toString());
         }
 
+        this.carID = Integer.parseInt(carMap.get("CarID").toString());
         this.ownerID = Integer.parseInt(carMap.get("Owner").toString());
         this.plate = carMap.get("Plate").toString();
         this.model = carMap.get("Model").toString();
@@ -56,6 +59,9 @@ public class Car {
 
     }
 
+    public int getCarID() {
+        return carID;
+    }
 
     public int getOwnerID() {
         return ownerID;

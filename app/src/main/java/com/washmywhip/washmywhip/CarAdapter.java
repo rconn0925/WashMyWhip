@@ -39,6 +39,7 @@ public class CarAdapter extends RecyclerView.Adapter<CarViewHolder> {
         holder.carMake.setText(car.getMake());
         holder.carModel.setText(car.getModel());
         holder.carPlate.setText(car.getPlate());
+        holder.carID = car.getOwnerID();
        // holder.carPic.setImageURI(Uri.parse(car.getPic()));
     }
 
@@ -55,5 +56,8 @@ public class CarAdapter extends RecyclerView.Adapter<CarViewHolder> {
 
         mCars.remove(position);
         notifyItemRemoved(position);
+    }
+    public Car getCar(int position){
+        return mCars.get(position);
     }
 }

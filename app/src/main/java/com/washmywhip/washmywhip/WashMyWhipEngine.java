@@ -60,7 +60,7 @@ public class WashMyWhipEngine {
     public void getCars(int userID, Callback<List<JSONObject>> callback) {
         mService.getCars(userID, callback);
     }
-    public void deleteCar(int userID, Callback<String> callback) {
-        mService.deleteCar(userID, callback);
+    public void deleteCar(int carID, Callback<Object> callback) {
+        mService.deleteCar(carID, callback);
     }
 }

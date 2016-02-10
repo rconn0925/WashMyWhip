@@ -19,6 +19,7 @@ import android.support.v7.widget.Toolbar;
 import android.text.method.KeyListener;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -36,6 +37,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -188,8 +190,49 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         mView.setLayoutManager(mLayoutManager);
         mCarAdapter = new CarAdapter(getActivity(),new ArrayList<Car>());
         mView.setAdapter(mCarAdapter);
+        mView.addOnItemTouchListener(
+                new RecyclerItemClickListener(getActivity(), new RecyclerItemClickListener.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(View view, final int position) {
+                        // do whatever
+                        Log.d("mView", "touched: " + position);
+                        final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                        builder.setTitle("Hold on!");
+                        builder.setMessage("Are you sure you want to delete this car?");
+                        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Car pendingDeleteCar = mCarAdapter.getCar(position);
+                               // String s = mSharedPreferences.getString("carsString","");
+                               Log.d("DELETE","id: "+pendingDeleteCar.getCarID());
+                                mCarAdapter.remove(position);
+                                //now remove from server
+                                mWashMyWhipEngine.deleteCar(pendingDeleteCar.getCarID(), new Callback<Object>() {
+                                    @Override
+                                    public void success(Object s, Response response) {
+                                       // String responseString = new String(((TypedByteArray) response.getBody()).getBytes());
+                                        Log.d("DELETEcar","success: "+ s.toString());
+                                    }
 
+                                    @Override
+                                    public void failure(RetrofitError error) {
+                                        Log.d("DELETEcar","failz: "+ error.toString());
+                                    }
+                                });
 
+                                dialog.cancel();
+                            }
+                        });
+                        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.cancel();
+                            }
+                        });
+                        builder.show();
+                    }
+                })
+        );
         addCarsToView();
 
 
@@ -223,6 +266,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
 
                     String responseString = new String(((TypedByteArray) response.getBody()).getBytes());
                     //responseString = responseString.replace("[","{").replace("]","}");
+                   // mSharedPreferences.edit().putString("carsString",responseString).apply();
                     JSONArray mArray = null;
                     try {
                         mArray = new JSONArray(responseString);
@@ -232,6 +276,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
                             Car newCar = new Car(car);
                             theCars.add(newCar);
                             Log.d("getCars", " car: " + car.toString());
+                            //mSharedPreferences.edit().putString("car"+i,)
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();

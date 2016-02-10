@@ -64,8 +64,8 @@ public interface WashMyWhipService {
 
 
     @FormUrlEncoded
-    @POST("/getCars.php")
-    void deleteCar(@Field("carID") int carID, Callback<String> callback);
+    @POST("/deleteCar.php")
+    void deleteCar(@Field("carID") int carID, Callback<Object> callback);
 
     @FormUrlEncoded
     @POST("/getCars.php")
