@@ -35,4 +35,5 @@ dependencies {
     compile 'com.stripe:stripe-android:+'
     compile 'de.hdodenhof:circleimageview:2.0.0'
     compile 'com.squareup.picasso:picasso:+'
+    compile 'com.github.dbachelder:CreditCardEntry:+'
 }

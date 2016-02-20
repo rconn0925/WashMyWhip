@@ -220,7 +220,7 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
                 //ALERT FAILURE
                 Log.d("addCar","add car failure... need to enter all the info");
                 final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                builder.setTitle("Error ading car");
+                builder.setTitle("Error adding car");
                 builder.setMessage("Please enter all the info and try again!");
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
@@ -242,28 +242,38 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
                         public void success(String jsonObject, Response response) {
                             String responseString = new String(((TypedByteArray) response.getBody()).getBytes());
                             Log.d("CREATEcar",responseString);
+
+                            EditText[] fields = {plateEditText,colorEditText};
+                            for(EditText field:fields){
+                                if(field.hasFocus()){
+                                    hideKeyboard(field);
+                                }
+                            }
+
+                            Fragment profileFragment = ProfileFragment.newInstance();
+                            FragmentManager fragmentManager = getFragmentManager();
+                            fragmentManager.beginTransaction().replace(R.id.contentFrame, profileFragment).commit();
                         }
 
                         @Override
                         public void failure(RetrofitError error) {
                             Log.d("CREATEcar",error.toString());
+
+                            final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                            builder.setTitle("Error adding car");
+                            builder.setMessage(error.toString());
+                            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.cancel();
+                                }
+                            });
+                            builder.show();
+
                         }
                     });
                     //Car createdCar = new Car();
                     //submit car data to server, and save into shared preferences
-
-
-                    EditText[] fields = {plateEditText,colorEditText};
-                    for(EditText field:fields){
-                        if(field.hasFocus()){
-                            hideKeyboard(field);
-                        }
-                    }
-
-                    Fragment profileFragment = ProfileFragment.newInstance();
-                    FragmentManager fragmentManager = getFragmentManager();
-                    fragmentManager.beginTransaction().replace(R.id.contentFrame, profileFragment).commit();
-
 
                 }
             }

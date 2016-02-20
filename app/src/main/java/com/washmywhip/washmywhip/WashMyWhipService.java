@@ -75,4 +75,7 @@ public interface WashMyWhipService {
     @POST("/getCars.php")
     void getCars(@Field("userID") int userID, Callback<List<JSONObject>> callback);
 
+    @FormUrlEncoded
+    @POST("/getStripeCustomer.php")
+    void getUserCards(@Field("userID")int userID, Callback<JSONObject> callback);
 }

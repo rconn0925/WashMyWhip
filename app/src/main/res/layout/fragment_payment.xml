@@ -8,27 +8,25 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <LinearLayout
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/cardGridView"
+            android:scrollbars="vertical"
+            android:paddingTop="8dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_alignParentTop="true"/>
 
-            <ListView
-                android:id="@+id/paymentList"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:choiceMode="singleChoice"
-                android:divider="@color/white"
-                android:dividerHeight="1dp"
-                android:background="@color/white">
-
-            </ListView>
-
-
-        </LinearLayout>
-
-
-
-
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add Payment Method"
+            android:textColor="@color/white"
+            android:background="@color/blue"
+            android:id="@+id/addPaymentButton"
+            android:layout_marginBottom="20dp"
+            android:layout_centerHorizontal="true"
+            android:layout_alignParentBottom="true"/>
     </RelativeLayout>
-
 </FrameLayout>

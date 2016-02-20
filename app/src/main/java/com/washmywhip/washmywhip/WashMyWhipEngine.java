@@ -48,7 +48,7 @@ public class WashMyWhipEngine {
     }
 
     public void updateUserInfo(int userId, String email, String firstName, String lastName, String phoneNumber, Callback<Object> callback) {
-        mService.updateUserInfo(userId, email, firstName, lastName, phoneNumber,callback);
+        mService.updateUserInfo(userId, email, firstName, lastName, phoneNumber, callback);
     }
 
     public void updateUserPassword(String username, String password,Callback<JSONObject> callback) {
@@ -67,4 +67,10 @@ public class WashMyWhipEngine {
     public void deleteCar(int carID, Callback<Object> callback) {
         mService.deleteCar(carID, callback);
     }
+    public void getUserCards(int userID, Callback<JSONObject> callback) {
+        mService.getUserCards(userID, callback);
+    }
+
+
+
 }

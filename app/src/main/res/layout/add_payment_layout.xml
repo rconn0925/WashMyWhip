@@ -1,37 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_width="200dp"
+    android:layout_height="wrap_content"
+    android:id="@+id/addPaymentForm"
+    android:layout_gravity="center_horizontal">
 
-    <LinearLayout
+
+    <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:id="@+id/inputCardNumber"
+        android:layout_marginTop="10dp"
+        android:maxLength="16"
+        android:layout_alignParentTop="true"
+        android:gravity="center_horizontal"
+        android:inputType="textNoSuggestions|number"
+        android:hint="16 digit card number (no spaces)"/>
+
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/inputCardNumber"
+        android:id="@+id/otherInfo">
 
         <EditText
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/inputCardNumber"
-            android:layout_marginTop="10dp"/>
+            android:hint="CVV" />
+
+        <Spinner
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"></Spinner>
+
+
+
+    </RelativeLayout>
+
+
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/otherInfo">
+
 
         <Button
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/addPayment"
             android:background="@color/blue"
             android:textColor="@color/white"
             android:text="Save"
-            android:layout_marginTop="10dp"/>
+            android:layout_marginTop="10dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"/>
 
         <Button
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/cancelPayment"
             android:background="@color/blue"
             android:textColor="@color/white"
             android:text="Cancel"
-            android:layout_marginTop="10dp"/>
+            android:layout_marginTop="10dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"/>
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+
 
     </LinearLayout>
-
 </RelativeLayout>
