@@ -13,6 +13,9 @@ import butterknife.InjectView;
  */
 public class CardViewHolder extends RecyclerView.ViewHolder{
 
+    @InjectView(R.id.cardBrand)
+    public TextView cardBrand;
+
     @InjectView(R.id.cardNumber)
     public TextView cardNumber;
 
@@ -21,9 +24,6 @@ public class CardViewHolder extends RecyclerView.ViewHolder{
 
     @InjectView(R.id.cardActive)
     public TextView active;
-
-    int cardID;
-    boolean isActive;
 
     public CardViewHolder(View itemView) {
         super(itemView);

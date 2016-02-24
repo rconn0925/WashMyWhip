@@ -129,7 +129,7 @@ public class PaymentFragment extends Fragment implements AdapterView.OnItemClick
                       //  Log.d("getCards",""+json.toString());
                         Log.d("getCards","default source: "+json.getString("default_source"));
                         defaultCard = json.getString("default_source");
-                        mSharedPreferences.edit().putString("default_source",defaultCard);
+                        mSharedPreferences.edit().putString("default_source",defaultCard).apply();
                         String data = json.getString("sources");
                         JSONObject cards = new JSONObject(data);
                         Log.d("getCards",json.toString());
@@ -144,11 +144,17 @@ public class PaymentFragment extends Fragment implements AdapterView.OnItemClick
 
                                 String expMonth = card.getString("exp_month");
                                 String expYear  = card.getString("exp_year");
-                                String expirationDate = expMonth + "/" + expYear;
                                 String lastFour  = card.getString("last4");
                                 String cardType = card.getString("brand");
+                                String exYearShort = expYear.substring(expYear.length() - 2);
+                                String expirationDate = expMonth + "/" + exYearShort;
                                 String id = card.getString("id");
-                                Card newCard = new Card(id,cardType,lastFour,expirationDate,false);
+                                Card newCard;
+                                if(id.equals(defaultCard)){
+                                    newCard = new Card(id,cardType,lastFour,expirationDate,true);
+                                } else {
+                                    newCard = new Card(id,cardType,lastFour,expirationDate,false);
+                                }
                                 theCards.add(newCard);
                                 Log.d("getCards", " card: " + card.toString());
                                 //mSharedPreferences.edit().putString("card"+i,)
@@ -169,11 +175,17 @@ public class PaymentFragment extends Fragment implements AdapterView.OnItemClick
                             JSONObject theCard = new JSONObject(card);
                             String expMonth = theCard.getString("exp_month");
                             String expYear  = theCard.getString("exp_year");
-                            String expirationDate = expMonth + "/" + expYear;
+                            String exYearShort = expYear.substring(expYear.length() - 2);
+                            String expirationDate = expMonth + "/" + exYearShort;
                             String lastFour  = theCard.getString("last4");
                             String cardType = theCard.getString("brand");
                             String id = theCard.getString("id");
-                            Card newCard = new Card(id,cardType,lastFour,expirationDate,false);
+                            Card newCard;
+                            if(id.equals(defaultCard)){
+                                newCard = new Card(id,cardType,lastFour,expirationDate,true);
+                            } else {
+                                newCard = new Card(id,cardType,lastFour,expirationDate,false);
+                            }
                             theCards.add(newCard);
                             mCards = theCards;
                             //mSharedPreferences.edit().putString("card"+i,)
@@ -279,12 +291,27 @@ public class PaymentFragment extends Fragment implements AdapterView.OnItemClick
                                     public void onClick(DialogInterface dialog, int which) {
                                         //SERVER STUFF HERE
 
-                                        Card pendingDeleteCard = mCardAdapter.getCard(position);
+                                        Card newDefaultCard = mCardAdapter.getCard(position);
                                         // String s = mSharedPreferences.getString("carsString","");
-                                        Log.d("DEFAULT", "id: " + pendingDeleteCard.getId());
+                                        Log.d("DEFAULT", "id: " + newDefaultCard.getId());
+                                        newDefaultCard.setActive(true);
+                                        defaultCard = newDefaultCard.getId();
+                                        mSharedPreferences.edit().putString("default_source",defaultCard).apply();
+                                        mCardAdapter.remove(position);
+                                        mCardAdapter.add(newDefaultCard);
 
+
+                                        for (int i = 0; i < mCardAdapter.getItemCount(); i++) {
+                                            if (mCardAdapter.getCard(i).isActive) {
+                                                Card temp = mCardAdapter.getCard(i);
+                                                temp.setActive(false);
+
+                                                mCardAdapter.remove(i);
+                                                mCardAdapter.add(temp);
+                                            }
+                                        }
                                         //now remove from server
-                                        mWashMyWhipEngine.changeDefaultStripeCard(userID, pendingDeleteCard.getId(), new Callback<Object>() {
+                                        mWashMyWhipEngine.changeDefaultStripeCard(userID, newDefaultCard.getId(), new Callback<Object>() {
                                             @Override
                                             public void success(Object s, Response response) {
                                                 // String responseString = new String(((TypedByteArray) response.getBody()).getBytes());

@@ -35,9 +35,15 @@ public class CardAdapter extends RecyclerView.Adapter<CardViewHolder> {
 
         final Card card = mCards.get(position);
         holder.cardExpiration.setText(card.getExpiration());
-        holder.cardNumber.setText(card.getLastFour());
-        //
+        String CCText = mContext.getResources().getString(R.string.CCBullets) +" "+ card.getLastFour();
+        holder.cardNumber.setText(CCText);
+        holder.cardBrand.setText(card.getCardType());
         holder.cardExpiration.setText(card.getExpiration());
+        if(card.isActive){
+            holder.active.setText(R.string.Default);
+        } else {
+            holder.active.setVisibility(View.INVISIBLE);
+        }
       //  holder.carMake.setText(car.getMake());
        // holder.carModel.setText(car.getModel());
        // holder.carPlate.setText(car.getPlate());
@@ -61,5 +67,9 @@ public class CardAdapter extends RecyclerView.Adapter<CardViewHolder> {
     }
     public Card getCard(int position){
         return mCards.get(position);
+    }
+    public Card[] getCards(){
+        Card[] cardArray = new Card[mCards.size()];
+        return mCards.toArray(cardArray);
     }
 }
