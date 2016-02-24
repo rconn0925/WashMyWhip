@@ -1,6 +1,7 @@
 package com.washmywhip.washmywhip;
 
 import com.squareup.okhttp.OkHttpClient;
+import com.stripe.android.model.Token;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -67,10 +68,18 @@ public class WashMyWhipEngine {
     public void deleteCar(int carID, Callback<Object> callback) {
         mService.deleteCar(carID, callback);
     }
-    public void getUserCards(int userID, Callback<JSONObject> callback) {
-        mService.getUserCards(userID, callback);
+    public void getStripeCustomer(int userID, Callback<JSONObject> callback) {
+        mService.getStripeCustomer(userID, callback);
     }
-
+    public void addPaymentSource(int userID,String tokenID, Callback<Object> callback) {
+        mService.addPaymentSource(userID, tokenID, callback);
+    }
+    public void changeDefaultStripeCard(int userID, String defaultID, Callback<Object> callback) {
+        mService.changeDefaultStripeCard(userID,defaultID, callback);
+    }
+    public void deleteStripeCard(int userID, String cardID,Callback<Object> callback) {
+        mService.deleteStripeCard(userID, cardID,callback);
+    }
 
 
 }

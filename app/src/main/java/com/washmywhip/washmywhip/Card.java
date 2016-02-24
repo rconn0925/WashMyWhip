@@ -9,9 +9,11 @@ public class Card {
     String cardType;
     String expiration;
     boolean isActive;
+    String id;
 
-    protected Card(String cardType, String lastFour,String expiration, boolean isActive){
+    protected Card(String id,String cardType, String lastFour,String expiration, boolean isActive){
 
+        this.id = id;
         this.cardType = cardType;
         this.lastFour = lastFour;
         this.expiration = expiration;
@@ -34,10 +36,14 @@ public class Card {
         return isActive;
     }
 
+    public String getId() {return id;}
+
     public String toString() {
         return cardType + " "+ lastFour + " " + expiration;
     }
 
-
+    public void setActive(boolean isActive){
+        this.isActive = isActive;
+    }
 
 }

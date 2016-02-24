@@ -1,5 +1,7 @@
 package com.washmywhip.washmywhip;
 
+import com.stripe.android.model.Token;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -8,7 +10,10 @@ import java.util.List;
 import retrofit.Callback;
 import retrofit.http.Field;
 import retrofit.http.FormUrlEncoded;
+import retrofit.http.Multipart;
 import retrofit.http.POST;
+import retrofit.http.Part;
+import retrofit.mime.TypedFile;
 
 /**
  * Created by Ross on 2/8/2016.
@@ -77,5 +82,24 @@ public interface WashMyWhipService {
 
     @FormUrlEncoded
     @POST("/getStripeCustomer.php")
-    void getUserCards(@Field("userID")int userID, Callback<JSONObject> callback);
+    void getStripeCustomer(@Field("userID")int userID, Callback<JSONObject> callback);
+
+    //1 if successful, 0 if sql error
+    @FormUrlEncoded
+    @POST("/addPaymentSource.php")
+    void addPaymentSource (@Field("userID") int userID,@Field("stripeToken") String tokenID, Callback<Object> callback);
+
+    //1 if successful, 0 if sql error
+    @FormUrlEncoded
+    @POST("/changeDefaultStripeCard.php")
+    void changeDefaultStripeCard (@Field("userID") int userID,@Field("defaultID") String cardID, Callback<Object> callback);
+
+    //1 if successful, 0 if sql error
+    @FormUrlEncoded
+    @POST("/deleteStripeCard.php")
+    void deleteStripeCard (@Field("userID") int userID,@Field("cardID") String cardID, Callback<Object> callback);
+
+    @Multipart
+    @POST("/")
+    void uploadCarImage(@Part("file") TypedFile file, Callback<Object> callback);
 }

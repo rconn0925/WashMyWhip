@@ -46,4 +46,6 @@
     <string name="cars">Cars</string>
     <string name="add_car">+Car</string>
 
+    <string name="WMWserver">http://www.WashMyWhip.com/wmwapp</string>
+
 </resources>

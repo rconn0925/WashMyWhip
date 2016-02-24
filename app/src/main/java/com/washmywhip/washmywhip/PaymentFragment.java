@@ -2,13 +2,14 @@ package com.washmywhip.washmywhip;
 
 import android.app.FragmentManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.preference.PreferenceManager;
 import android.support.annotation.MainThread;
-import android.support.v7.app.AlertDialog;
+import android.app.AlertDialog;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.InputFilter;
@@ -21,6 +22,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.app.AlertDialog;
 
 import com.devmarvel.creditcardentry.library.CreditCard;
 import com.devmarvel.creditcardentry.library.CreditCardForm;
@@ -104,11 +106,11 @@ public class PaymentFragment extends Fragment implements AdapterView.OnItemClick
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
-        userID = -1;
         defaultCard = null;
         mWashMyWhipEngine = new WashMyWhipEngine();
         mCards = new ArrayList<>();
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
+        userID = Integer.parseInt(mSharedPreferences.getString("UserID", "-1"));
     }
 
     public void getCards(){
@@ -116,7 +118,7 @@ public class PaymentFragment extends Fragment implements AdapterView.OnItemClick
         final ArrayList<Card> theCards = new ArrayList<>();
         if(userID>=0){
 
-            mWashMyWhipEngine.getUserCards(1, new Callback<JSONObject>() {
+            mWashMyWhipEngine.getStripeCustomer(userID, new Callback<JSONObject>() {
                 @Override
                 public void success(JSONObject o, Response response) {
                     String responseString = new String(((TypedByteArray) response.getBody()).getBytes());
@@ -124,15 +126,18 @@ public class PaymentFragment extends Fragment implements AdapterView.OnItemClick
                     try {
                         json = new JSONObject(responseString);
                         paymentData = jsonToMap(json);
-                        Log.d("getCards","default source: "+json.getString("id"));
+                      //  Log.d("getCards",""+json.toString());
+                        Log.d("getCards","default source: "+json.getString("default_source"));
                         defaultCard = json.getString("default_source");
+                        mSharedPreferences.edit().putString("default_source",defaultCard);
                         String data = json.getString("sources");
                         JSONObject cards = new JSONObject(data);
-
+                        Log.d("getCards",json.toString());
                         if(cards.get("object").equals("list")){
                             Log.d("getCards","multiple");
                             //multiple cards
                             String cardString = cards.getString("data");
+                            Log.d("getCards",cardString);
                             JSONArray jsonArray = new JSONArray(cardString);
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject card = jsonArray.getJSONObject(i);
@@ -142,7 +147,8 @@ public class PaymentFragment extends Fragment implements AdapterView.OnItemClick
                                 String expirationDate = expMonth + "/" + expYear;
                                 String lastFour  = card.getString("last4");
                                 String cardType = card.getString("brand");
-                                Card newCard = new Card(cardType,lastFour,expirationDate,false);
+                                String id = card.getString("id");
+                                Card newCard = new Card(id,cardType,lastFour,expirationDate,false);
                                 theCards.add(newCard);
                                 Log.d("getCards", " card: " + card.toString());
                                 //mSharedPreferences.edit().putString("card"+i,)
@@ -166,7 +172,8 @@ public class PaymentFragment extends Fragment implements AdapterView.OnItemClick
                             String expirationDate = expMonth + "/" + expYear;
                             String lastFour  = theCard.getString("last4");
                             String cardType = theCard.getString("brand");
-                            Card newCard = new Card(cardType,lastFour,expirationDate,false);
+                            String id = theCard.getString("id");
+                            Card newCard = new Card(id,cardType,lastFour,expirationDate,false);
                             theCards.add(newCard);
                             mCards = theCards;
                             //mSharedPreferences.edit().putString("card"+i,)
@@ -202,12 +209,117 @@ public class PaymentFragment extends Fragment implements AdapterView.OnItemClick
         // Inflate the layout for this fragment
         View v =  inflater.inflate(R.layout.fragment_payment, container, false);
         ButterKnife.inject(this, v);
-
-
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
+        userID = Integer.parseInt(mSharedPreferences.getString("UserID", "-1"));
         mLayoutManager = new GridLayoutManager(getActivity(), 1);
         mView.setLayoutManager(mLayoutManager);
         mCardAdapter = new CardAdapter(getActivity(),new ArrayList<Card>());
         mView.setAdapter(mCardAdapter);
+        mView.addOnItemTouchListener(
+                new RecyclerItemClickListener(getActivity(), new RecyclerItemClickListener.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(View view, final int position) {
+                        // do whatever
+                        Log.d("mView", "touched: " + position);
+                        final android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(getActivity());
+                        builder.setTitle("Hold on!");
+                        builder.setMessage("Would you like to delete this card or make it your default payment method?");
+                        builder.setNegativeButton("Delete", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+
+
+                                final AlertDialog.Builder confirmBuilder = new AlertDialog.Builder(getActivity());
+                                confirmBuilder.setTitle("Hold on!");
+                                confirmBuilder.setMessage("Are you sure you want to delete this card?");
+                                confirmBuilder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        //SERVER STUFF HERE
+                                        Card pendingDeleteCard = mCardAdapter.getCard(position);
+                                        // String s = mSharedPreferences.getString("carsString","");
+                                        Log.d("DELETE", "id: " + pendingDeleteCard.getId());
+                                        mCardAdapter.remove(position);
+                                        //now remove from server
+
+                                        mWashMyWhipEngine.deleteStripeCard(userID, pendingDeleteCard.getId(), new Callback<Object>() {
+                                            @Override
+                                            public void success(Object s, Response response) {
+                                                // String responseString = new String(((TypedByteArray) response.getBody()).getBytes());
+                                                Log.d("DELETEcard", "success: " + s.toString());
+                                            }
+
+                                            @Override
+                                            public void failure(RetrofitError error) {
+                                                Log.d("DELETEcard", "failz: " + error.toString());
+                                            }
+                                        });
+
+                                        dialog.cancel();
+                                    }
+                                });
+                                confirmBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.cancel();
+                                    }
+                                });
+                                confirmBuilder.show();
+                                dialog.cancel();
+                            }
+                        });
+                        builder.setPositiveButton("Default", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                final AlertDialog.Builder confirmBuilder = new AlertDialog.Builder(getActivity());
+                                confirmBuilder.setTitle("Hold on!");
+                                confirmBuilder.setMessage("Are you sure you want to make this card your default payment method?");
+                                confirmBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        //SERVER STUFF HERE
+
+                                        Card pendingDeleteCard = mCardAdapter.getCard(position);
+                                        // String s = mSharedPreferences.getString("carsString","");
+                                        Log.d("DEFAULT", "id: " + pendingDeleteCard.getId());
+
+                                        //now remove from server
+                                        mWashMyWhipEngine.changeDefaultStripeCard(userID, pendingDeleteCard.getId(), new Callback<Object>() {
+                                            @Override
+                                            public void success(Object s, Response response) {
+                                                // String responseString = new String(((TypedByteArray) response.getBody()).getBytes());
+                                                Log.d("DEFAULTcard", "success: " + s.toString());
+                                            }
+
+                                            @Override
+                                            public void failure(RetrofitError error) {
+                                                Log.d("DEFAULTcard", "failz: " + error.toString());
+                                            }
+                                        });
+
+                                        dialog.cancel();
+                                    }
+                                });
+                                confirmBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.cancel();
+                                    }
+                                });
+                                confirmBuilder.show();
+                                dialog.cancel();
+                            }
+                        });
+                        builder.setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.cancel();
+                            }
+                        });
+                        builder.show();
+                    }
+                })
+        );
       //  mView.addOnItemTouchListener(null);
         getCards();
        // paymentList.setOnItemClickListener(this);
