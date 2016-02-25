@@ -209,7 +209,7 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
 
             //validate input info
 
-
+            saveButton.setOnClickListener(null);
             carColor = colorEditText.getText().toString();
             carPlate = plateEditText.getText().toString();
 

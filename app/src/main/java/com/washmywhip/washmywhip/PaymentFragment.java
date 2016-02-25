@@ -289,9 +289,10 @@ public class PaymentFragment extends Fragment implements AdapterView.OnItemClick
                                 confirmBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
-                                        //SERVER STUFF HERE
-
                                         Card newDefaultCard = mCardAdapter.getCard(position);
+                                        //SERVER STUFF HERE
+/*
+
                                         // String s = mSharedPreferences.getString("carsString","");
                                         Log.d("DEFAULT", "id: " + newDefaultCard.getId());
                                         newDefaultCard.setActive(true);
@@ -310,12 +311,17 @@ public class PaymentFragment extends Fragment implements AdapterView.OnItemClick
                                                 mCardAdapter.add(temp);
                                             }
                                         }
+                                        */
                                         //now remove from server
                                         mWashMyWhipEngine.changeDefaultStripeCard(userID, newDefaultCard.getId(), new Callback<Object>() {
                                             @Override
                                             public void success(Object s, Response response) {
                                                 // String responseString = new String(((TypedByteArray) response.getBody()).getBytes());
                                                 Log.d("DEFAULTcard", "success: " + s.toString());
+                                                while(mCardAdapter.getItemCount()>0){
+                                                    mCardAdapter.remove(0);
+                                                }
+                                                getCards();
                                             }
 
                                             @Override
