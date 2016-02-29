@@ -30,10 +30,10 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
 
-    <string name="color">Color</string>
+    <string name="color"> Color</string>
     <string name="make">Make</string>
     <string name="model">Model</string>
-    <string name="plate">Plate</string>
+    <string name="plate"> Plate</string>
 
     <string name="save_car">Save Car</string>
     <string name="delete_car">Delete Car</string>

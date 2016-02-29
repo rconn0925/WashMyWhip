@@ -21,6 +21,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.ActionBarContainer;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -373,9 +375,8 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     }
 
 
-    //might not have to use this shitttttt
     public void initMenuTextView(UserState state){
-        if(state == UserState.REQUESTING || state == UserState.CONFIRMING){
+        if(state == UserState.REQUESTING){
             //invis
             cancelButton.setVisibility(View.GONE);
         } else {
@@ -392,8 +393,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
             initConfirming();
         }
         else if(v.getId() == R.id.requestWashButton){
-            initWaiting();
-
+            initQueued();
         } else if (v.getId() == cancelButton.getId()){
             if(cancelButton.getText().toString().equals("Cancel")){
                 Log.d("MENU TEXTVIEW", "CANCEL CLICK");
@@ -438,6 +438,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
             hideKeyboard(addressText);
         }
         cancelButton = (TextView) findViewById(R.id.cancelToolbarButton);
+        cancelButton.setOnClickListener(null);
         cancelButton.setVisibility(View.GONE);
     }
     public void initConfirming() {
@@ -454,13 +455,17 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         allowLocationServices(false);
 
         //add cancel button to action bar
+        cancelButton = (TextView) findViewById(R.id.cancelToolbarButton);
         cancelButton.setVisibility(View.VISIBLE);
+        cancelButton.setOnClickListener(this);
         cancelButton.setText("Cancel");
 
 
         int view = R.layout.confirming_request_layout;
         swapView(view);
 
+        //RecyclerView carSelector = (RecyclerView) findViewById(R.id.carSelect);
+        //carSelector.setAdapter(null);
         requestWashButton = (Button) findViewById(R.id.requestWashButton);
         requestWashButton.setOnClickListener(this);
 
@@ -471,8 +476,15 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     public void initQueued(){
         Log.d(TAG, "Wash Requested");
         userState = UserState.QUEUED;
-        //userState - UserState.WASHING;
+        //userState - UserState.WASHING
+        //View view = this.getLayoutInflater().inflate(R.layout.queued_layout,9, false);
+        //this.addContentView(R.layout.queued_layout);
 
+        int view = R.layout.queued_layout;
+        swapView(view);
+
+        cancelButton = (TextView) findViewById(R.id.cancelToolbarButton);
+        cancelButton.setOnClickListener(this);
         cancelButton.setVisibility(View.VISIBLE);
         cancelButton.setText("Cancel");
         //Queued popup
@@ -481,6 +493,10 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     public void initWaiting() {
         int view = R.layout.waiting_layout;
         swapView(view);
+        cancelButton = (TextView) findViewById(R.id.cancelToolbarButton);
+        cancelButton.setOnClickListener(this);
+        cancelButton.setVisibility(View.VISIBLE);
+        cancelButton.setText("Cancel");
     }
     public void initArrived() {
 //can no longer cancel
@@ -595,23 +611,22 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     }
 
     public void addCurrentStateView(){
-        /*
+
         if(userState==UserState.REQUESTING){
-
+            initRequesting();
         } else if(userState == UserState.CONFIRMING) {
-
+            initConfirming();
         } else if(userState == UserState.QUEUED) {
-
+            initQueued();
         } else if(userState == UserState.WAITING) {
-
+            initWaiting();
         } else if(userState == UserState.ARRIVED) {
-
+            initArrived();
         } else if(userState == UserState.WASHING) {
-
+            initWashing();
         } else if(userState == UserState.FINALIZING) {
-
+            initFinalizing();
         }
-        */
         currentView.setVisibility(View.VISIBLE);
     }
 
