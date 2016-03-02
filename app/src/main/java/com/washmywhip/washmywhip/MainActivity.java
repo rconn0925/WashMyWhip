@@ -391,8 +391,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         Log.d("TEST", "onClick");
         if(v.getId()==R.id.setLocationButton){
             initConfirming();
-        }
-        else if(v.getId() == R.id.requestWashButton){
+        } else if(v.getId() == R.id.requestWashButton){
             initQueued();
         } else if (v.getId() == cancelButton.getId()){
             if(cancelButton.getText().toString().equals("Cancel")){
@@ -409,6 +408,14 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
             }
 
 
+        } else if(v.getId() == R.id.cancelQueue) {
+            initArrived();
+        } else if(v.getId() == R.id.contactButton) {
+            Log.d("contactRequest","contect requested");
+            initWashing();
+        } else if(v.getId() == R.id.washingContact) {
+            Log.d("contactRequest","contect requested");
+            initFinalizing();
         }
     }
 
@@ -487,6 +494,9 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         cancelButton.setOnClickListener(this);
         cancelButton.setVisibility(View.VISIBLE);
         cancelButton.setText("Cancel");
+
+        Button cancelQueueButton = (Button)findViewById(R.id.cancelQueue);
+        cancelQueueButton.setOnClickListener(this);
         //Queued popup
 
     }
@@ -500,12 +510,34 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     }
     public void initArrived() {
 //can no longer cancel
+        int view = R.layout.arrived_layout;
+        swapView(view);
+        cancelButton = (TextView) findViewById(R.id.cancelToolbarButton);
+        cancelButton.setOnClickListener(null);
+        cancelButton.setVisibility(View.INVISIBLE);
+
+        Button contactButton = (Button) findViewById(R.id.contactButton);
+        contactButton.setOnClickListener(this);
+
     }
     public void initWashing() {
+        int view = R.layout.washing_layout;
+        swapView(view);
+        cancelButton = (TextView) findViewById(R.id.cancelToolbarButton);
+        cancelButton.setOnClickListener(null);
+        cancelButton.setVisibility(View.INVISIBLE);
 
+        Button contactButton = (Button) findViewById(R.id.washingContact);
+        contactButton.setOnClickListener(this);
     }
     public void initFinalizing(){
-
+        /*
+        int view = R.layout.washing_layout;
+        swapView(view);
+        cancelButton = (TextView) findViewById(R.id.cancelToolbarButton);
+        cancelButton.setOnClickListener(null);
+        cancelButton.setVisibility(View.INVISIBLE);
+        */
     }
 
 
