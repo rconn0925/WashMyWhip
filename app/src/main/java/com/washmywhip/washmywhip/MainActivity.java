@@ -53,6 +53,7 @@ import com.google.android.maps.GeoPoint;
 import com.google.maps.android.ui.IconGenerator;
 
 import java.io.IOException;
+import java.net.Socket;
 import java.util.List;
 
 import butterknife.ButterKnife;
@@ -111,6 +112,10 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
                     String country = addressList.get(0).getAddressLine(2);
                     mAddress = address + " " + city + ", " + country;
 
+                    if(isLoaded==-1){
+                        isLoaded=1;
+                        initRequesting();
+                    }
                     addressText.setText(mAddress);
                     if(addressText.hasFocus()){
                         hideKeyboard(addressText);
@@ -137,11 +142,11 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     private ActionBarDrawerToggle mDrawerToggle;
     private String[] navigationOptions;
     private CharSequence mTitle, mDrawerTitle;
-    @InjectView(R.id.setLocationButton)
+
     Button setLocationButton;
-    @InjectView(R.id.addressText)
     EditText addressText;
-    @InjectView(R.id.requestingLayout)
+    @InjectView(R.id.loadingLayout)
+    RelativeLayout loadingLayout;
     RelativeLayout requestingLayout;
     @InjectView(R.id.toolbar)
     Toolbar toolbar;
@@ -152,11 +157,15 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     @InjectView(R.id.mListView)
     ListView navDrawerList;
 
+
     FrameLayout contentFrame;
     Button signOutButton;
     Button requestWashButton;
     TextView confirmedAddress;
     SupportMapFragment mapFragment;
+    ConnectionManager mConnectionManager;
+    int isLoaded;
+
 
 
     @Override
@@ -171,6 +180,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         currentFragment = null;
         userState = UserState.CONFIRMING;
         setSupportActionBar(toolbar);
+        isLoaded = -1;
 
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
@@ -186,29 +196,29 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         getSupportActionBar().setHomeButtonEnabled(true);
         mDrawerToggle.syncState();
 
-        currentView = requestingLayout;
+        currentView = loadingLayout;
+        int view = R.layout.loading_layout;
+        swapView(view);
         cancelButton.setText("");
-        setLocationButton.setOnClickListener(this);
-        addressText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 
-                if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    Log.d(TAG, "entered address");
-                    setCameraToUserInput();
-                }
-                return false;
+        //setup javaScript connection
+        mConnectionManager = null;
+        final Thread networkThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                mConnectionManager = new ConnectionManager(getApplicationContext());
+                //Log.d("server connection", "isConnectedAfterAdd: " + mConnectionManager.isConnected());
             }
         });
-        addressText.setOnFocusChangeListener(new TextView.OnFocusChangeListener() {
-
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                Log.d(TAG, "edir text focus: " + hasFocus);
-            }
-        });
+        networkThread.run();
     }
 
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        mConnectionManager.disconnect();
+
+    }
 
     @Override
     protected void onPostResume(){
@@ -272,15 +282,11 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        Log.d("TEST","map ready");
+        Log.d("TEST", "map ready");
         allowLocationServices(true);
-        addressText.setText(getMyLocationAddress());
         mMap.setOnMyLocationChangeListener(myLocationChangeListener);
         mMap.setOnCameraChangeListener(myCameraChangeListener);
         mMap.setOnMapClickListener(myMapClickListener);
-        if(addressText.hasFocus()){
-            hideKeyboard(addressText);
-        }
     }
 
 
@@ -392,6 +398,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         if(v.getId()==R.id.setLocationButton){
             initConfirming();
         } else if(v.getId() == R.id.requestWashButton){
+            requestWashButton.setOnClickListener(null);
             initQueued();
         } else if (v.getId() == cancelButton.getId()){
             if(cancelButton.getText().toString().equals("Cancel")){
@@ -416,12 +423,17 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         } else if(v.getId() == R.id.washingContact) {
             Log.d("contactRequest","contect requested");
             initFinalizing();
+        } else if(v.getId() == R.id.finalizingSubmitButton) {
+            Log.d("finalizing","submit");
+            initRequesting();
         }
     }
 
     public void initRequesting() {
 
         userState = UserState.REQUESTING;
+        int view = R.layout.requesting_layout;
+        swapView(view);
         setLocationButton = (Button) findViewById(R.id.setLocationButton);
         setLocationButton.setOnClickListener(this);
 
@@ -436,6 +448,8 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
                 return false;
             }
         });
+
+
         mMap.setOnCameraChangeListener(myCameraChangeListener);
         //unlock camera postion
         mMap.getUiSettings().setAllGesturesEnabled(true);
@@ -482,6 +496,9 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     }
     public void initQueued(){
         Log.d(TAG, "Wash Requested");
+
+
+        //server stuff
         userState = UserState.QUEUED;
         //userState - UserState.WASHING
         //View view = this.getLayoutInflater().inflate(R.layout.queued_layout,9, false);
@@ -531,13 +548,16 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         contactButton.setOnClickListener(this);
     }
     public void initFinalizing(){
-        /*
-        int view = R.layout.washing_layout;
+
+        int view = R.layout.finalizing_layout;
         swapView(view);
         cancelButton = (TextView) findViewById(R.id.cancelToolbarButton);
         cancelButton.setOnClickListener(null);
         cancelButton.setVisibility(View.INVISIBLE);
-        */
+
+        Button submitButton = (Button) findViewById(R.id.finalizingSubmitButton);
+        submitButton.setOnClickListener(this);
+
     }
 
 
