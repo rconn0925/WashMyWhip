@@ -131,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         @Override
         public void onMapClick(LatLng latLng) {
             Log.d(TAG, "clearing focus on address text");
-            if(addressText.hasFocus()){
+            if(isLoaded==1&&addressText.hasFocus()){
                 Log.d(TAG, "address text has focus");
                 hideKeyboard(addressText);
             }
@@ -444,6 +444,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
 
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
                     Log.d(TAG, "entered address");
+                    setCameraToUserInput();
                 }
                 return false;
             }
@@ -604,7 +605,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
 
         }
 
-        if(addressText.hasFocus()){
+        if(addressText!=null &&addressText.hasFocus()){
             hideKeyboard(addressText);
         }
         // Insert the fragment by replacing any existing fragment
