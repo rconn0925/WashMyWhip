@@ -202,7 +202,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 public void success(JSONObject jsonObject, Response response) {
                     Log.d("THUGLYFE", "successful user login");
                     SharedPreferences.Editor prefsEditor = mSharedPreferences.edit();
-                    prefsEditor.putString("username", mUsernameView.getText().toString()).apply();
+                    prefsEditor.putString("email", mUsernameView.getText().toString()).apply();
                     prefsEditor.putString("password",  mPasswordView.getText().toString()).apply();
                     //Try to get response body
                     String responseString = new String(((TypedByteArray) response.getBody()).getBytes());

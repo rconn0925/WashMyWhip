@@ -49,7 +49,8 @@
                         android:id="@+id/firstNameProfile"
                         android:background="@drawable/rounded_corner"
                         android:layout_marginTop="4dp"
-                        android:textColor="@color/black"/>
+                        android:textColor="@color/black"
+                        android:singleLine="true"/>
 
                     <EditText
                         android:layout_width="200dp"
@@ -57,7 +58,8 @@
                         android:id="@+id/lastNameProfile"
                         android:background="@drawable/rounded_corner"
                         android:layout_marginTop="4dp"
-                        android:textColor="@color/black"/>
+                        android:textColor="@color/black"
+                        android:singleLine="true"/>
 
 
                 </LinearLayout>
@@ -75,7 +77,8 @@
                 android:id="@+id/emailProfile"
                 android:background="@drawable/rounded_corner"
                 android:layout_marginTop="4dp"
-                android:textColor="@color/black"/>
+                android:textColor="@color/black"
+                android:singleLine="true"/>
 
             <EditText
                 android:layout_width="300dp"
@@ -83,7 +86,8 @@
                 android:id="@+id/phoneProfile"
                 android:background="@drawable/rounded_corner"
                 android:layout_marginTop="4dp"
-                android:textColor="@color/black"/>
+                android:textColor="@color/black"
+                android:singleLine="true"/>
 
             <RelativeLayout
                 android:layout_width="match_parent"

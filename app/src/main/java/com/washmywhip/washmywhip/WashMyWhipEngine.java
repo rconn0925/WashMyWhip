@@ -24,7 +24,7 @@ public class WashMyWhipEngine {
         OkClient okclient = new OkClient(okhttpclient);
 
         RestAdapter.Builder builder =  new RestAdapter.Builder()
-                .setEndpoint("http://www.ryanserkes.com/WashMyWhip/")
+                .setEndpoint("http://www.WashMyWhip.us/wmwapp")
                 .setLogLevel(RestAdapter.LogLevel.FULL)
                 .setClient(okclient);
 

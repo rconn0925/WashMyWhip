@@ -52,7 +52,7 @@ public interface WashMyWhipService {
      */
     @FormUrlEncoded
     @POST("/requestUserLogin.php")
-    void requestUserLogin(@Field("username") String username,@Field("password") String password, Callback<JSONObject> callback);
+    void requestUserLogin(@Field("email") String email,@Field("password") String password, Callback<JSONObject> callback);
 
 
 

@@ -165,7 +165,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     SupportMapFragment mapFragment;
     ConnectionManager mConnectionManager;
     int isLoaded;
-
+    private boolean hasBeenRequested;
 
 
     @Override
@@ -408,6 +408,9 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
                 int view = R.layout.requesting_layout;
                 swapView(view);
                 initRequesting();
+                if(hasBeenRequested){
+                    mConnectionManager.cancelRequest();
+                }
 
             } else if (cancelButton.getText().toString().equals("Edit")){
                 Log.d("MENU TEXTVIEW", "EDIT CLICK");
@@ -425,6 +428,8 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
             initFinalizing();
         } else if(v.getId() == R.id.finalizingSubmitButton) {
             Log.d("finalizing","submit");
+
+            mConnectionManager.userHasFinalized();
             initRequesting();
         }
     }
@@ -497,7 +502,10 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     }
     public void initQueued(){
         Log.d(TAG, "Wash Requested");
-
+        int carID = -1;
+        int washType = 1;
+        mConnectionManager.requestWash(mMarker.getPosition(),carID,washType);
+        hasBeenRequested = true;
 
         //server stuff
         userState = UserState.QUEUED;
