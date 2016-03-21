@@ -38,6 +38,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ListView;
+import android.widget.RatingBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -161,11 +162,19 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     FrameLayout contentFrame;
     Button signOutButton;
     Button requestWashButton;
+    Button contactButton;
     TextView confirmedAddress;
+    TextView textContact;
+    TextView callContact;
+    TextView doneContact;
     SupportMapFragment mapFragment;
     ConnectionManager mConnectionManager;
     int isLoaded;
     private boolean hasBeenRequested;
+    private View contactView;
+    private Button finalizingSubmit;
+    private RatingBar ratingBar;
+    private EditText finalizingComments;
 
 
     @Override
@@ -420,17 +429,31 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
 
         } else if(v.getId() == R.id.cancelQueue) {
             initArrived();
-        } else if(v.getId() == R.id.contactButton) {
-            Log.d("contactRequest","contect requested");
+        } else if(v.getId() == R.id.arrivedContact) {
+            Log.d("contactRequest","contact requested");
             initWashing();
         } else if(v.getId() == R.id.washingContact) {
-            Log.d("contactRequest","contect requested");
+            Log.d("contactRequest","contact requested");
             initFinalizing();
         } else if(v.getId() == R.id.finalizingSubmitButton) {
-            Log.d("finalizing","submit");
+            int rating = ratingBar.getProgress();
+            String comments = finalizingComments.getText().toString();
+            hideKeyboard(finalizingComments);
+            Log.d("finalizing", "submit: "+ comments + ", "+ rating);
 
-            mConnectionManager.userHasFinalized();
+            //mConnectionManager.userHasFinalized();
             initRequesting();
+        } else if(v.getId() == R.id.contactCall) {
+            Log.d("contact", "call");
+            removeContact();
+            contactCallVendor();
+        } else if(v.getId() == R.id.contactText) {
+            Log.d("contact", "call");
+            removeContact();
+            contactTextVendor();
+        } else if(v.getId() == R.id.contactDone) {
+            Log.d("contact", "call");
+            removeContact();
         }
     }
 
@@ -535,14 +558,14 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         cancelButton.setText("Cancel");
     }
     public void initArrived() {
-//can no longer cancel
+        //can no longer cancel
         int view = R.layout.arrived_layout;
         swapView(view);
         cancelButton = (TextView) findViewById(R.id.cancelToolbarButton);
         cancelButton.setOnClickListener(null);
         cancelButton.setVisibility(View.INVISIBLE);
 
-        Button contactButton = (Button) findViewById(R.id.contactButton);
+        contactButton = (Button) findViewById(R.id.arrivedContact);
         contactButton.setOnClickListener(this);
 
     }
@@ -564,11 +587,60 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         cancelButton.setOnClickListener(null);
         cancelButton.setVisibility(View.INVISIBLE);
 
-        Button submitButton = (Button) findViewById(R.id.finalizingSubmitButton);
-        submitButton.setOnClickListener(this);
+        finalizingSubmit = (Button) findViewById(R.id.finalizingSubmitButton);
+        finalizingSubmit.setOnClickListener(this);
+
+        ratingBar = (RatingBar) findViewById(R.id.finalizingRating);
+        finalizingComments = (EditText) findViewById(R.id.finalizingComments);
 
     }
 
+    private void initContact() {
+        int view = R.layout.contact_layout;
+        ViewGroup parent = (ViewGroup) currentView.getParent();
+        contactView = getLayoutInflater().inflate(view, parent, false);
+        parent.addView(contactView);
+        textContact = (TextView) findViewById(R.id.contactText);
+        textContact.setOnClickListener(this);
+        callContact = (TextView) findViewById(R.id.contactCall);
+        callContact.setOnClickListener(this);
+        doneContact = (TextView) findViewById(R.id.contactDone);
+        doneContact.setOnClickListener(this);
+
+
+
+
+    }
+
+    public void removeContact() {
+        //int view = R.layout.contact_layout;
+        ViewGroup parent = (ViewGroup) currentView.getParent();
+        // int index = parent.indexOfChild(contactView);
+        parent.removeView(contactView);
+    }
+
+    public void contactCallVendor() {
+        String userNumber = "2039215412";
+        Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + userNumber));
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        startActivity(intent);
+
+
+    }
+    public void contactTextVendor(){
+        String number = "2039215412";  // The number on which you want to send SMS
+        startActivity(new Intent(Intent.ACTION_VIEW, Uri.fromParts("sms", number, null)));
+
+    }
 
 
     private void selectItem(int position) {
@@ -669,6 +741,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         }
         */
         currentView.setVisibility(View.GONE);
+
     }
 
     public void addCurrentStateView(){

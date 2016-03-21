@@ -102,4 +102,8 @@ public interface WashMyWhipService {
     @Multipart
     @POST("/")
     void uploadCarImage(@Part("file") TypedFile file, Callback<Object> callback);
+
+    @FormUrlEncoded
+    @POST("/rateVendor.php")
+    void rateVendor(@Field("transactionID") int transactionID,@Field("rating") int rating,@Field("comments") String comments, Callback<String> callback);
 }

@@ -75,11 +75,13 @@ public class WashMyWhipEngine {
         mService.addPaymentSource(userID, tokenID, callback);
     }
     public void changeDefaultStripeCard(int userID, String defaultID, Callback<Object> callback) {
-        mService.changeDefaultStripeCard(userID,defaultID, callback);
+        mService.changeDefaultStripeCard(userID, defaultID, callback);
     }
     public void deleteStripeCard(int userID, String cardID,Callback<Object> callback) {
-        mService.deleteStripeCard(userID, cardID,callback);
+        mService.deleteStripeCard(userID, cardID, callback);
     }
-
+    public void rateVendor(int transactionID,int rating,String comments,Callback<String> callback) {
+        mService.rateVendor(transactionID, rating, comments, callback);
+    }
 
 }

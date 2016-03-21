@@ -49,6 +49,6 @@
         android:text="CONTACT"
         android:textColor="@color/white"
         android:background="@color/blue"
-        android:id="@+id/contactButton"/>
+        android:id="@+id/arrivedContact"/>
 
 </RelativeLayout>
