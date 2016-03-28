@@ -38,7 +38,7 @@
             android:text="Cancel"
             android:background="@color/blue"
             android:textColor="@color/white"
-            android:visibility="visible"/>
+            android:visibility="gone"/>
 
 
     </LinearLayout>

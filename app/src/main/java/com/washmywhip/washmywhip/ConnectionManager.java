@@ -1,8 +1,10 @@
 package com.washmywhip.washmywhip;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 
@@ -35,6 +37,7 @@ public class ConnectionManager {
     private int userID;
     private String deviceID;
     SharedPreferences mSharedPreferences;
+    private Context mContext;
     public ConnectionManager(Context context){
 
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
@@ -43,6 +46,7 @@ public class ConnectionManager {
                 Secure.ANDROID_ID);
         userID = Integer.parseInt(mSharedPreferences.getString("UserID", "-1"));
         Log.d("server connection","response?: " + deviceID);
+        mContext = context;
 
         try {
            // mAddress = "http://192.168.0.18:3000";
@@ -60,7 +64,11 @@ public class ConnectionManager {
                 public void call(Object... args) {
                     Log.d("server connection", "onAddUser");
                     if(args!=null&&args.length>0){
-                        Log.d("server connection", "onAddUser staus: "+ args[0].toString());
+                        Log.d("server connection", "onAddUser staus: " + args[0].toString());
+                        Intent intent = new Intent();
+                        intent.putExtra("state", args[0].toString());
+                        intent.setAction("com.android.activity.SEND_DATA");
+                        LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
                     }
                 }
             }).on(Socket.EVENT_CONNECT, new Emitter.Listener() {
@@ -87,8 +95,8 @@ public class ConnectionManager {
             }).on(Socket.EVENT_ERROR, new Emitter.Listener() {
                 @Override
                 public void call(Object... args) {
-                    String response = (String) args[0];
-                    Log.d("server connection", "onError: " + response);
+                   // String response = (String) args[0];
+                    Log.d("server connection", "onError: ");
                 }
             }).on("requestWash", new Emitter.Listener() {
                 @Override
@@ -140,6 +148,29 @@ public class ConnectionManager {
                         //put info into shared preferences?
                     }
                 }
+            }).on("requestAccepted", new Emitter.Listener() {
+                @Override
+                public void call(Object... args) {
+                    Log.d("server connection", "requestAccepted getting VendorID and Location");
+                    if(args!=null&&args.length>1){
+                        Log.d("server connection", "requestAccepted: "+ args[0].toString()+" "+ args[1].toString());
+                        //put info into shared preferences?
+                        //this should initialize the waiting layout
+                        Intent intent = new Intent();
+                        intent.putExtra("vendorInfo", args[0].toString()+", "+ args[1].toString());
+                        intent.setAction("com.android.activity.SEND_DATA");
+                        LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
+                    }
+                }
+            }).on("vendorArrived", new Emitter.Listener() {
+                @Override
+                public void call(Object... args) {
+                    Log.d("server connection", "on VENDOR has arrived ");
+                    Intent intent = new Intent();
+                    intent.putExtra("vendorHasArrived", "true");
+                    intent.setAction("com.android.activity.SEND_DATA");
+                    LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
+                }
             });
             Log.d("server connection", "attempting to connect...");
             mSocket.connect();
@@ -161,8 +192,8 @@ public class ConnectionManager {
     }
     public void requestWash(LatLng location, int carID, int washType){
         Log.d("server connection", "requestWash server: "+ mSocket.connected());
-
-        Object[] data = {location,carID,washType};
+        String locationString = location.latitude+", "+location.longitude;
+        Object[] data = {locationString,carID,washType};
         if(mSocket.connected()){
             mSocket.emit("requestWash", data);
         }
@@ -212,6 +243,7 @@ public class ConnectionManager {
         mSocket.off("userHasFinalized");
         mSocket.off("transactionID");
         mSocket.off("vendorInfo");
+        mSocket.off("requestAccepted");
 
     }
 

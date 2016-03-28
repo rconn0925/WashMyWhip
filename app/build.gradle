@@ -35,7 +35,7 @@ dependencies {
     compile 'com.stripe:stripe-android:+'
     compile 'de.hdodenhof:circleimageview:2.0.0'
     compile 'com.squareup.picasso:picasso:+'
-    compile 'com.github.dbachelder:CreditCardEntry:+'
+    compile 'com.github.dbachelder:CreditCardEntry:1.4.7'
     compile ('io.socket:socket.io-client:0.7.0') {
         // excluding org.json which is provided by Android
         exclude group: 'org.json', module: 'json'

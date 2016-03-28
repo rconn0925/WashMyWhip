@@ -5,8 +5,10 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -15,9 +17,13 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -52,13 +58,23 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.maps.GeoPoint;
 import com.google.maps.android.ui.IconGenerator;
+import com.squareup.picasso.Picasso;
+
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import de.hdodenhof.circleimageview.CircleImageView;
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
+import retrofit.mime.TypedByteArray;
 
 public class MainActivity extends AppCompatActivity implements AboutFragment.OnFragmentInteractionListener, PaymentFragment.OnFragmentInteractionListener, ProfileFragment.OnFragmentInteractionListener, OnMapReadyCallback, View.OnClickListener, AdapterView.OnItemClickListener, NavigationView.OnNavigationItemSelectedListener {
 
@@ -75,6 +91,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     private Geocoder mGeocoder;
     private String mAddress;
     private static final String SET_LOCATION = "Set Location";
+    private WashMyWhipEngine mWashMyWhipEngine;
 
     private GoogleMap.OnMyLocationChangeListener myLocationChangeListener = new GoogleMap.OnMyLocationChangeListener() {
         @Override
@@ -113,13 +130,11 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
                     String country = addressList.get(0).getAddressLine(2);
                     mAddress = address + " " + city + ", " + country;
 
-                    if(isLoaded==-1){
-                        isLoaded=1;
-                        initRequesting();
-                    }
-                    addressText.setText(mAddress);
-                    if(addressText.hasFocus()){
-                        hideKeyboard(addressText);
+                    if(addressText!=null){
+                        addressText.setText(mAddress);
+                        if(addressText.hasFocus()){
+                            hideKeyboard(addressText);
+                        }
                     }
                 }
             } catch (IOException e) {
@@ -175,7 +190,11 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     private Button finalizingSubmit;
     private RatingBar ratingBar;
     private EditText finalizingComments;
-
+    private BroadcastReceiver mMessageReceiver;
+    private CircleImageView vendorWaitingImage;
+    private CircleImageView arrivedVendorImage;
+    private Button contactButtonArrived;
+    private Button contactButtonWashing;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -190,6 +209,72 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         userState = UserState.CONFIRMING;
         setSupportActionBar(toolbar);
         isLoaded = -1;
+        mMessageReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                // Extract data included in the Intent
+                Log.d("server connection", "RECEIVER: Got INTENT: "+ intent.toString());
+                if(intent.hasExtra("state")){
+                    String state = intent.getStringExtra("state");
+                    Log.d("server connection", "RECEIVER: Got state: " + state);
+                    if(state.equals("inactive")){
+                        initRequesting();
+                    } else if(state.equals("queued")){
+                        initQueued();
+                    } else if(state.equals("waiting")){
+                        initWaiting();
+                    } else if(state.equals("arrived")){
+                        initArrived();
+                    } else if(state.equals("washing")){
+                        initWashing();
+                    } else if(state.equals("finalizing")){
+                        initFinalizing();
+                    } else {
+                        //??
+                    }
+                } else if (intent.hasExtra("vendorInfo")){
+                    String userInfo = intent.getStringExtra("vendorInfo");
+                    Log.d("server connection", "RECEIVER: Got vendorInfo: " + userInfo);
+                    String[] info = userInfo.split(", ");
+                    int vendorID = Integer.parseInt(info[0]);
+                    String vendorLat =info[1];
+                    String vendorLong = info[2];
+
+                    mSharedPreferences.edit().putInt("vendorID", vendorID).apply();
+                    mSharedPreferences.edit().putString("vendorLat", vendorLat).apply();
+                    mSharedPreferences.edit().putString("vendorLong", vendorLong).apply();
+
+                    LatLng vendorLocation = new LatLng(Double.parseDouble(vendorLat),Double.parseDouble(vendorLong));
+
+                    initWaiting();
+
+                    mWashMyWhipEngine.getVendorWithID(vendorID, new Callback<JSONObject>() {
+                        @Override
+                        public void success(JSONObject o, Response response) {
+                            String responseString = new String(((TypedByteArray) response.getBody()).getBytes());
+                            Map<String, String> userInfo = new HashMap<String, String>();
+                            userInfo = parseResponse(responseString);
+                            String username = userInfo.get("Username");
+                            String phoneNum = userInfo.get("Phone");
+                            Log.d("getVendor", "success: "+responseString);
+                            mSharedPreferences.edit().putString("vendorUsername", username).apply();
+                            mSharedPreferences.edit().putString("vendorPhone", phoneNum).apply();
+                            Log.d("getVendor", "success: " + responseString);
+                        }
+
+                        @Override
+                        public void failure(RetrofitError error) {
+                            Log.d("getVendor", "success: " + error.getMessage());
+                        }
+                    });
+                }
+                else if (intent.hasExtra("vendorHasArrived")){
+                    initArrived();
+                }
+            }
+        };
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+                new IntentFilter("com.android.activity.SEND_DATA"));
 
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
@@ -209,7 +294,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         int view = R.layout.loading_layout;
         swapView(view);
         cancelButton.setText("");
-
+        mWashMyWhipEngine = new WashMyWhipEngine();
         //setup javaScript connection
         mConnectionManager = null;
         final Thread networkThread = new Thread(new Runnable() {
@@ -220,6 +305,23 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
             }
         });
         networkThread.run();
+    }
+
+    private Map<String,String> parseResponse(String s) {
+        HashMap userData = new HashMap();
+        s = s.substring(1, s.length() - 1);
+        s = s.replace(" ", "").replace("\t", "").replace(",", "").replace("\"", "");
+        String[] dataItem = s.split("\n");
+        for (int i = 1; i < dataItem.length; i++) {
+            if (dataItem[i].endsWith(":")) {
+                dataItem[i] = dataItem[i] + " ";
+            }
+            String[] info = dataItem[i].split(":");
+            String key = info[0];
+            String value = info[1];
+            userData.put(key, value);
+        }
+        return userData;
     }
 
     @Override
@@ -404,15 +506,19 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     @Override
     public void onClick(View v) {
         Log.d("TEST", "onClick");
-        if(v.getId()==R.id.setLocationButton){
+        if(v.getId()==R.id.setLocationButton) {
             initConfirming();
         } else if(v.getId() == R.id.requestWashButton){
             requestWashButton.setOnClickListener(null);
+
+            //CHANGE THIS
+            int carID = 1;
+            int washType = 1;
+            mConnectionManager.requestWash(mMarker.getPosition(),carID,washType);
             initQueued();
         } else if (v.getId() == cancelButton.getId()){
             if(cancelButton.getText().toString().equals("Cancel")){
                 Log.d("MENU TEXTVIEW", "CANCEL CLICK");
-
 
                 int view = R.layout.requesting_layout;
                 swapView(view);
@@ -426,15 +532,17 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
 
             }
 
-
         } else if(v.getId() == R.id.cancelQueue) {
-            initArrived();
+           // initArrived();
         } else if(v.getId() == R.id.arrivedContact) {
-            Log.d("contactRequest","contact requested");
-            initWashing();
+            Log.d("contactRequest", "contact requested");
+            contactButtonArrived.setOnClickListener(null);
+            initContact();
+
         } else if(v.getId() == R.id.washingContact) {
             Log.d("contactRequest","contact requested");
-            initFinalizing();
+            contactButtonWashing.setOnClickListener(null);
+            initContact();
         } else if(v.getId() == R.id.finalizingSubmitButton) {
             int rating = ratingBar.getProgress();
             String comments = finalizingComments.getText().toString();
@@ -525,9 +633,6 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     }
     public void initQueued(){
         Log.d(TAG, "Wash Requested");
-        int carID = -1;
-        int washType = 1;
-        mConnectionManager.requestWash(mMarker.getPosition(),carID,washType);
         hasBeenRequested = true;
 
         //server stuff
@@ -550,39 +655,67 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
 
     }
     public void initWaiting() {
+        hasBeenRequested = true;
         int view = R.layout.waiting_layout;
+        swapView(view);
+        userState = UserState.WAITING;
+        cancelButton = (TextView) findViewById(R.id.cancelToolbarButton);
+        cancelButton.setOnClickListener(this);
+        cancelButton.setVisibility(View.VISIBLE);
+        cancelButton.setText("Cancel");
+
+
+        int vendorID = mSharedPreferences.getInt("vendorID", -1);
+        vendorWaitingImage = (CircleImageView) findViewById(R.id.waitingPicture);
+        if (vendorID > 0) {
+            Picasso.with(this)
+                    .load("http://www.WashMyWhip.us/wmwapp/VendorAvatarImages/vendor" + vendorID + "avatar.jpg")
+                    .resize(100, 100)
+                    .centerCrop()
+                    .into(vendorWaitingImage);
+        }
+    }
+    public void initArrived() {
+        hasBeenRequested = true;
+        userState = UserState.ARRIVED;
+        int view = R.layout.arrived_layout;
         swapView(view);
         cancelButton = (TextView) findViewById(R.id.cancelToolbarButton);
         cancelButton.setOnClickListener(this);
         cancelButton.setVisibility(View.VISIBLE);
         cancelButton.setText("Cancel");
-    }
-    public void initArrived() {
-        //can no longer cancel
-        int view = R.layout.arrived_layout;
-        swapView(view);
-        cancelButton = (TextView) findViewById(R.id.cancelToolbarButton);
-        cancelButton.setOnClickListener(null);
-        cancelButton.setVisibility(View.INVISIBLE);
 
-        contactButton = (Button) findViewById(R.id.arrivedContact);
-        contactButton.setOnClickListener(this);
+        contactButtonArrived = (Button) findViewById(R.id.arrivedContact);
+        contactButtonArrived.setOnClickListener(this);
+        int vendorID = mSharedPreferences.getInt("vendorID", -1);
+        arrivedVendorImage = (CircleImageView) findViewById(R.id.arrivedVendorImage);
+        if (vendorID > 0) {
+            Picasso.with(this)
+                    .load("http://www.WashMyWhip.us/wmwapp/VendorAvatarImages/vendor" + vendorID + "avatar.jpg")
+                    .resize(100, 100)
+                    .centerCrop()
+                    .into(arrivedVendorImage);
+        }
 
     }
     public void initWashing() {
+        hasBeenRequested = true;
+        //can no longer cancel
         int view = R.layout.washing_layout;
+        userState = UserState.WASHING;
         swapView(view);
         cancelButton = (TextView) findViewById(R.id.cancelToolbarButton);
         cancelButton.setOnClickListener(null);
         cancelButton.setVisibility(View.INVISIBLE);
 
-        Button contactButton = (Button) findViewById(R.id.washingContact);
-        contactButton.setOnClickListener(this);
+        contactButtonWashing = (Button) findViewById(R.id.washingContact);
+        contactButtonWashing.setOnClickListener(this);
     }
     public void initFinalizing(){
-
+        hasBeenRequested = true;
         int view = R.layout.finalizing_layout;
         swapView(view);
+        userState = UserState.FINALIZING;
         cancelButton = (TextView) findViewById(R.id.cancelToolbarButton);
         cancelButton.setOnClickListener(null);
         cancelButton.setVisibility(View.INVISIBLE);
@@ -617,21 +750,19 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         ViewGroup parent = (ViewGroup) currentView.getParent();
         // int index = parent.indexOfChild(contactView);
         parent.removeView(contactView);
+
+
+        if(contactButtonArrived!=null){
+            contactButtonArrived.setOnClickListener(this);
+        }
+        if(contactButtonWashing!=null){
+            contactButtonWashing.setOnClickListener(this);
+        }
     }
 
     public void contactCallVendor() {
         String userNumber = "2039215412";
-        Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + userNumber));
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
+        Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + userNumber));
         startActivity(intent);
 
 

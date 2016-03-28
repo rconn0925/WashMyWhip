@@ -106,4 +106,9 @@ public interface WashMyWhipService {
     @FormUrlEncoded
     @POST("/rateVendor.php")
     void rateVendor(@Field("transactionID") int transactionID,@Field("rating") int rating,@Field("comments") String comments, Callback<String> callback);
+
+    //1 if successful, 0 if sql error
+    @FormUrlEncoded
+    @POST("/getVendorWithID.php")
+    void getVendorWithID (@Field("vendorID") int vendorID, Callback<JSONObject> callback);
 }

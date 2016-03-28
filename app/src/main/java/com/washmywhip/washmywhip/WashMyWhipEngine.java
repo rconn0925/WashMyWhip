@@ -83,5 +83,8 @@ public class WashMyWhipEngine {
     public void rateVendor(int transactionID,int rating,String comments,Callback<String> callback) {
         mService.rateVendor(transactionID, rating, comments, callback);
     }
+    public void getVendorWithID(int vendorID, Callback<JSONObject> callback) {
+        mService.getVendorWithID(vendorID, callback);
+    }
 
 }
