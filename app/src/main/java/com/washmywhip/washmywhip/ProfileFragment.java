@@ -30,6 +30,8 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -43,6 +45,7 @@ import java.util.Objects;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import de.hdodenhof.circleimageview.CircleImageView;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
@@ -76,7 +79,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
 
 
     @InjectView(R.id.pictureProfile)
-    ImageView profilePicture;
+    CircleImageView profilePicture;
     @InjectView(R.id.firstNameProfile)
     EditText firstNameEditText;
     @InjectView(R.id.lastNameProfile)
@@ -238,6 +241,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         mView.setLayoutManager(mLayoutManager);
         mCarAdapter = new CarAdapter(getActivity(),new ArrayList<Car>());
         mView.setAdapter(mCarAdapter);
+        mView.addItemDecoration(new SpacesItemDecoration(8));
         mView.addOnItemTouchListener(
                 new RecyclerItemClickListener(getActivity(), new RecyclerItemClickListener.OnItemClickListener() {
                     @Override
@@ -251,20 +255,20 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 Car pendingDeleteCar = mCarAdapter.getCar(position);
-                               // String s = mSharedPreferences.getString("carsString","");
-                               Log.d("DELETE","id: "+pendingDeleteCar.getCarID());
+                                // String s = mSharedPreferences.getString("carsString","");
+                                Log.d("DELETE", "id: " + pendingDeleteCar.getCarID());
                                 mCarAdapter.remove(position);
                                 //now remove from server
                                 mWashMyWhipEngine.deleteCar(pendingDeleteCar.getCarID(), new Callback<Object>() {
                                     @Override
                                     public void success(Object s, Response response) {
-                                       // String responseString = new String(((TypedByteArray) response.getBody()).getBytes());
-                                        Log.d("DELETEcar","success: "+ s.toString());
+                                        // String responseString = new String(((TypedByteArray) response.getBody()).getBytes());
+                                        Log.d("DELETEcar", "success: " + s.toString());
                                     }
 
                                     @Override
                                     public void failure(RetrofitError error) {
-                                        Log.d("DELETEcar","failz: "+ error.toString());
+                                        Log.d("DELETEcar", "failz: " + error.toString());
                                     }
                                 });
 
@@ -281,6 +285,14 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
                     }
                 })
         );
+        int userID = Integer.parseInt(mSharedPreferences.getString("UserID", "-1"));
+        if(userID>=0){
+            Picasso.with(getActivity())
+                    .load("http://www.WashMyWhip.us/wmwapp/ClientAvatarImages/client" + userID+ "avatar.jpg")
+                    .resize(100, 100)
+                    .centerCrop()
+                    .into(profilePicture);
+        }
         addCarsToView();
 
         /*

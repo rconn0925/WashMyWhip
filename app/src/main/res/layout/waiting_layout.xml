@@ -3,41 +3,62 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/waitingLayout">
-    <LinearLayout
-        android:layout_width="300dp"
-        android:layout_height="100dp"
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="10dp"
-        android:orientation="horizontal"
-        android:background="@color/white">
+        android:layout_marginBottom="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginRight="12dp"
+        android:layout_marginLeft="12dp"
+        android:layout_marginStart="12dp"
+        android:background="@drawable/rounded_corner"
+        android:id="@+id/waitingContactLayout"
+        android:clickable="true"
+        android:onClick="onClick">
         <de.hdodenhof.circleimageview.CircleImageView
             android:layout_width="75dp"
             android:layout_height="75dp"
-            android:id="@+id/waitingPicture"/>
+            android:id="@+id/waitingPicture"
+            android:layout_margin="8dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"/>
 
-        <LinearLayout
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="VENDOR"
-                android:id="@+id/vendorText"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/vendorNameText"
-                android:text="Sample Vendor Text"/>
-        </LinearLayout>
+            android:text="VENDOR"
+            android:id="@+id/waitingVendorName"
+            android:textSize="18sp"
+            android:layout_toRightOf="@id/waitingPicture"
+            android:layout_toEndOf="@id/waitingPicture"
+            android:layout_centerVertical="true"/>
 
-        <com.github.lzyzsd.circleprogress.CircleProgress
-            android:id="@+id/circle_progress"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:paddingTop="10dp"/>
 
-    </LinearLayout>
+        <ProgressBar
+            android:layout_width="75dp"
+            android:layout_height="75dp"
+            android:id="@+id/waitingProgress"
+            android:layout_centerInParent="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_margin="8dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/progressText"
+            android:textSize="14sp"
+            android:text="5 MIN"
+            android:layout_alignRight="@+id/waitingProgress"
+            android:layout_alignLeft="@+id/waitingProgress"
+            android:layout_alignEnd="@id/waitingProgress"
+            android:layout_alignStart="@id/waitingProgress"
+            android:layout_alignBottom="@+id/waitingProgress"
+            android:layout_alignTop="@+id/waitingProgress"
+            android:gravity="center"/>
+
+    </RelativeLayout>
 
 </RelativeLayout>

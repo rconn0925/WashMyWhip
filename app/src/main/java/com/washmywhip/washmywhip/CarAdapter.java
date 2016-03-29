@@ -7,6 +7,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.squareup.picasso.Picasso;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,8 +41,13 @@ public class CarAdapter extends RecyclerView.Adapter<CarViewHolder> {
         holder.carMake.setText(car.getMake());
         holder.carModel.setText(car.getModel());
         holder.carPlate.setText(car.getPlate());
-        holder.carID = car.getOwnerID();
-       // holder.carPic.setImageURI(Uri.parse(car.getPic()));
+        holder.carID = car.getCarID();
+
+        Picasso.with(mContext)
+                .load("http://www.WashMyWhip.us/wmwapp/CarImages/car" + holder.carID + "image.jpg")
+                .resize(60, 60)
+                .centerCrop()
+                .into(holder.carPic);
     }
 
     @Override

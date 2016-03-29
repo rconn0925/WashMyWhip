@@ -2,43 +2,70 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginRight="10dp"
-    android:layout_marginEnd="10dp"
-    android:layout_marginLeft="10dp"
-    android:layout_marginStart="10dp"
+    android:layout_marginRight="12dp"
+    android:layout_marginEnd="12dp"
+    android:layout_marginLeft="12dp"
+    android:layout_marginStart="12dp"
     android:layout_marginTop="12dp"
     android:layout_marginBottom="12dp"
     >
 
     <LinearLayout
-        android:layout_width="200dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="8dp"
+        android:padding="12dp"
         android:orientation="vertical"
         android:background="@drawable/rounded_corner"
         android:layout_centerInParent="true"
-        android:gravity="center_horizontal">
+        android:gravity="center_horizontal"
+        android:layout_marginRight="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginLeft="12dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="12dp">
 
         <de.hdodenhof.circleimageview.CircleImageView
             android:layout_width="80dp"
             android:layout_height="80dp"
-            android:id="@+id/arrivedVendorImage"/>
+            android:id="@+id/arrivedVendorImage" />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="TestVendor"/>
+            android:text="TestVendor"
+            android:textSize="18sp"
+            android:id="@+id/arrivedVendorUsername"/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="HAS ARRIVED"/>
+            android:text="HAS ARRIVED"
+            android:textColor="@color/blue"
+            android:textSize="18sp"/>
+        <View
+            android:layout_width="170dp"
+            android:layout_height="1dp"
+            android:background="@color/light_grey"/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="$20"/>
+            android:text="$20.00"
+            android:textColor="@color/blue"
+            android:textStyle="bold"
+            android:textSize="32sp"
+            android:id="@+id/arrivedWashCost"/>
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="WASH TYPE"/>
+            android:text="EXTERIOR WASH"
+            android:textColor="@color/grey"
+            android:textSize="12sp"
+            android:layout_marginBottom="6dp"
+            android:id="@+id/arrivedWashType"/>
+        <View
+            android:layout_width="170dp"
+            android:layout_height="1dp"
+            android:background="@color/light_grey"/>
 
     </LinearLayout>
 
@@ -48,7 +75,7 @@
         android:layout_alignParentBottom="true"
         android:text="CONTACT"
         android:textColor="@color/white"
-        android:background="@color/blue"
+        android:background="@drawable/rounded_corner_blue"
         android:id="@+id/arrivedContact"/>
 
 </RelativeLayout>

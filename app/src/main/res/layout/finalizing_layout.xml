@@ -9,52 +9,77 @@
     android:layout_marginTop="12dp"
     android:layout_marginBottom="12dp">
 
-    <LinearLayout
-        android:layout_width="wrap_content"
+    <RelativeLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:layout_centerInParent="true"
-        android:background="@drawable/rounded_corner"
-        android:gravity="center_horizontal">
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
+        android:paddingLeft="12dp"
+        android:paddingStart="12dp"
+        android:paddingRight="12dp"
+        android:paddingEnd="12dp"
+        android:background="@drawable/rounded_corner">
 
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:id="@+id/finalizingVendorImage"/>
-
-        <TextView
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="HOW WOULD YOU RATE"/>
+            android:orientation="vertical"
+            android:layout_centerInParent="true"
+            android:gravity="center_horizontal">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="VENDOR NAME"/>
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:id="@+id/finalizingVendorImage"
+                android:layout_margin="12dp"/>
 
-        <RatingBar
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/finalizingRating"
-            android:numStars="5"
-            android:stepSize="1" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="HOW WOULD YOU RATE"
+                android:textSize="18sp"/>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/light_grey"/>
 
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:id="@+id/finalizingComments"
-            android:hint="Additional Comments (Optional)"
-            android:textSize="12sp"
-            android:maxLength="120"/>
 
-    </LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="VENDOR NAME"
+                android:textColor="@color/blue"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:id="@+id/finalizingVendorName"/>
+
+            <RatingBar
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/finalizingRating"
+                android:numStars="5"
+                android:stepSize="1" />
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:id="@+id/finalizingComments"
+                android:hint="Additional Comments (Optional)"
+                android:textSize="12sp"
+                android:maxLength="120"
+                android:background="@drawable/rounded_corner"
+                android:gravity="top"/>
+
+        </LinearLayout>
+    </RelativeLayout>
 
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="SUBMIT"
         android:textColor="@color/white"
-        android:background="@color/blue"
+        android:background="@drawable/rounded_corner_blue"
         android:id="@+id/finalizingSubmitButton"
         android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"/>

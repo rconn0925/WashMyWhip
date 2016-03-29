@@ -63,7 +63,7 @@ public class ConnectionManager {
                 @Override
                 public void call(Object... args) {
                     Log.d("server connection", "onAddUser");
-                    if(args!=null&&args.length>0){
+                    if (args != null && args.length > 0) {
                         Log.d("server connection", "onAddUser staus: " + args[0].toString());
                         Intent intent = new Intent();
                         intent.putExtra("state", args[0].toString());
@@ -106,36 +106,28 @@ public class ConnectionManager {
                         Log.d("server connection", "onRequestWash staus: "+ args[0].toString());
                     }
                 }
-            }).on("cancelWash", new Emitter.Listener() {
+            }).on("updateETA", new Emitter.Listener() {
                 @Override
                 public void call(Object... args) {
-                    Log.d("server connection", "onCancelWash (i dont think this is called)");
-                    if(args!=null&&args.length>0){
-                        Log.d("server connection", "onCancelWash staus: "+ args[0].toString());
+                    Log.d("server connection", "on updateETA getting location");
+                    if (args != null && args.length > 0) {
+                        /*
+                        Log.d("server connection", "updateETA: "+ args[0].toString());
+                        Intent intent = new Intent();
+                        intent.putExtra("vendorLocation", args[0].toString());
+                        intent.setAction("com.android.activity.SEND_DATA");
+                        LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
+                        */
                     }
-                }
-            }).on("updateVendorInfo", new Emitter.Listener() {
-                @Override
-                public void call(Object... args) {
-                    Log.d("server connection", "onUpdateVendorInfo getting VendorID and Location");
-                    if(args!=null&&args.length>0){
-                        Log.d("server connection", "onUpdateVendorInfo: "+ args[0].toString()+ " "+ args[1].toString());
-                    }
-                }
-            }).on("updateTransactionID", new Emitter.Listener() {
-                @Override
-                public void call(Object... args) {
-                    Log.d("server connection", "onUpdateTransactionID getting transactionID");
-                    if(args!=null&&args.length>0){
-                        Log.d("server connection", "onUpdateTransactionID: "+ args[0].toString());
-                    }
+                    //  updateVendorInfo();
+
                 }
             }).on("transactionID", new Emitter.Listener() {
                 @Override
                 public void call(Object... args) {
                     Log.d("server connection", "onTransactionID getting transactionID");
                     if(args!=null&&args.length>0){
-                        Log.d("server connection", "onTransactionID: "+ args[0].toString());
+                        Log.d("server connection", "onTransactionID: " + args[0].toString());
                         //put info into shared preferences?
                     }
                 }
@@ -171,6 +163,30 @@ public class ConnectionManager {
                     intent.setAction("com.android.activity.SEND_DATA");
                     LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
                 }
+            }).on("washStarted", new Emitter.Listener() {
+                @Override
+                public void call(Object... args) {
+                    Log.d("server connection", "on VENDOR has started wash ");
+                    if(args!=null&&args.length>0) {
+                        Intent intent = new Intent();
+                        intent.putExtra("vendorHasStartedWash", args[0].toString());
+                        intent.setAction("com.android.activity.SEND_DATA");
+                        LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
+                        mSharedPreferences.edit().putString("transactionID",args[0].toString()).apply();
+                    }
+
+                }
+            }).on("washCompleted", new Emitter.Listener() {
+                @Override
+                public void call(Object... args) {
+                    Log.d("server connection", "on VENDOR has completed wash ");
+                    if(args!=null&&args.length>0) {
+                        Intent intent = new Intent();
+                        intent.putExtra("vendorHasCompletedWash",  args[0].toString());
+                        intent.setAction("com.android.activity.SEND_DATA");
+                        LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
+                    }
+                }
             });
             Log.d("server connection", "attempting to connect...");
             mSocket.connect();
@@ -191,8 +207,8 @@ public class ConnectionManager {
         }
     }
     public void requestWash(LatLng location, int carID, int washType){
-        Log.d("server connection", "requestWash server: "+ mSocket.connected());
         String locationString = location.latitude+", "+location.longitude;
+        Log.d("server connection", "requestWash server: "+ locationString);
         Object[] data = {locationString,carID,washType};
         if(mSocket.connected()){
             mSocket.emit("requestWash", data);
@@ -239,11 +255,13 @@ public class ConnectionManager {
         mSocket.off("requestWash");
         mSocket.off("cancelRequest");
         mSocket.off("updateVendorInfo");
-        mSocket.off("updateTransactionID");
+        mSocket.off("updateETA");
         mSocket.off("userHasFinalized");
         mSocket.off("transactionID");
         mSocket.off("vendorInfo");
         mSocket.off("requestAccepted");
+        mSocket.off("washCompleted");
+        mSocket.off("washStarted");
 
     }
 

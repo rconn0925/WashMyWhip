@@ -7,6 +7,7 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -28,6 +29,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.ActionBarContainer;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -46,6 +48,7 @@ import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.RatingBar;
 import android.widget.RelativeLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -60,10 +63,13 @@ import com.google.android.maps.GeoPoint;
 import com.google.maps.android.ui.IconGenerator;
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -195,6 +201,10 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     private CircleImageView arrivedVendorImage;
     private Button contactButtonArrived;
     private Button contactButtonWashing;
+    private ArrayList<Car> mCars;
+    private CircleImageView finalizingVendorImage;
+    private RelativeLayout waitingContactLayout;
+    private RecyclerView carDropDown;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -204,6 +214,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         setContentView(R.layout.activity_main);
         //setContentView(R.layout.activity_nav_drawer);
         ButterKnife.inject(this);
+        mContext = this;
         toolbar.setTitle("");
         currentFragment = null;
         userState = UserState.CONFIRMING;
@@ -214,6 +225,8 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
             public void onReceive(Context context, Intent intent) {
                 // Extract data included in the Intent
                 Log.d("server connection", "RECEIVER: Got INTENT: "+ intent.toString());
+
+
                 if(intent.hasExtra("state")){
                     String state = intent.getStringExtra("state");
                     Log.d("server connection", "RECEIVER: Got state: " + state);
@@ -256,7 +269,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
                             userInfo = parseResponse(responseString);
                             String username = userInfo.get("Username");
                             String phoneNum = userInfo.get("Phone");
-                            Log.d("getVendor", "success: "+responseString);
+                            Log.d("getVendor", "success: " + responseString);
                             mSharedPreferences.edit().putString("vendorUsername", username).apply();
                             mSharedPreferences.edit().putString("vendorPhone", phoneNum).apply();
                             Log.d("getVendor", "success: " + responseString);
@@ -270,6 +283,10 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
                 }
                 else if (intent.hasExtra("vendorHasArrived")){
                     initArrived();
+                } else if (intent.hasExtra("vendorHasStartedWash")){
+                    initWashing();
+                } else if (intent.hasExtra("vendorHasCompletedWash")){
+                    initFinalizing();
                 }
             }
         };
@@ -513,8 +530,10 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
 
             //CHANGE THIS
             int carID = 1;
-            int washType = 1;
-            mConnectionManager.requestWash(mMarker.getPosition(),carID,washType);
+            int washType = 0;
+            if (mConnectionManager.isConnected()){
+                mConnectionManager.requestWash(mMarker.getPosition(),carID,washType);
+            }
             initQueued();
         } else if (v.getId() == cancelButton.getId()){
             if(cancelButton.getText().toString().equals("Cancel")){
@@ -523,7 +542,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
                 int view = R.layout.requesting_layout;
                 swapView(view);
                 initRequesting();
-                if(hasBeenRequested){
+                if(mConnectionManager.isConnected()){
                     mConnectionManager.cancelRequest();
                 }
 
@@ -546,11 +565,28 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         } else if(v.getId() == R.id.finalizingSubmitButton) {
             int rating = ratingBar.getProgress();
             String comments = finalizingComments.getText().toString();
+            int transactionID = Integer.parseInt(mSharedPreferences.getString("transactionID","-1"));
             hideKeyboard(finalizingComments);
-            Log.d("finalizing", "submit: "+ comments + ", "+ rating);
+            Log.d("finalizing", "submit: " + comments + ", " + rating +", "+ transactionID);
 
-            //mConnectionManager.userHasFinalized();
-            initRequesting();
+            if(transactionID>=0){
+                mWashMyWhipEngine.rateVendor(transactionID, rating, comments, new Callback<String>() {
+                    @Override
+                    public void success(String s, Response response) {
+                        Log.d("rateVendor", "success: " +s);
+                        if(mConnectionManager.isConnected()){
+                            mConnectionManager.userHasFinalized();
+                        }
+                        initRequesting();
+                    }
+
+                    @Override
+                    public void failure(RetrofitError error) {
+                        Log.d("rateVendor", "failz: " +error.getMessage());
+                    }
+                });
+            }
+
         } else if(v.getId() == R.id.contactCall) {
             Log.d("contact", "call");
             removeContact();
@@ -562,9 +598,71 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         } else if(v.getId() == R.id.contactDone) {
             Log.d("contact", "call");
             removeContact();
+        } else if(v.getId() == R.id.waitingContactLayout) {
+            initContact();
+            waitingContactLayout.setOnClickListener(null);
         }
     }
 
+    public void getCarsAndAddToDropdown(){
+
+        final CarAdapter mCarAdapter = new CarAdapter(mContext,new ArrayList<Car>());
+        carDropDown = (RecyclerView) findViewById(R.id.confirmingCarDropdown);
+        carDropDown.setAdapter(mCarAdapter);
+        GridLayoutManager mLayoutManager = new GridLayoutManager(mContext, 1);
+        carDropDown.setLayoutManager(mLayoutManager);
+        carDropDown.addItemDecoration(new SpacesItemDecoration(8));
+        carDropDown.addOnItemTouchListener( new RecyclerItemClickListener(this, new RecyclerItemClickListener.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, final int position) {
+                Log.d("carSelector", "touched: " + position);
+                Car pendingDeleteCar = mCarAdapter.getCar(position);
+                view.setBackgroundResource(R.drawable.rounded_corner_blue_border);
+            }
+        }));
+
+        int userIDnum = Integer.parseInt(mSharedPreferences.getString("UserID", "-1"));
+        final ArrayList<Car> theCars = new ArrayList<Car>();
+        //CarAdapter mCarAdapter = new CarAdapter(mContext,theCars);
+        if (userIDnum >= 0) {
+            mWashMyWhipEngine.getCars(userIDnum, new Callback<List<JSONObject>>() {
+                @Override
+                public void success(List<JSONObject> jsonObject, Response response) {
+
+                    String responseString = new String(((TypedByteArray) response.getBody()).getBytes());
+                    //responseString = responseString.replace("[","{").replace("]","}");
+                    // mSharedPreferences.edit().putString("carsString",responseString).apply();
+                    JSONArray mArray = null;
+                    try {
+                        mArray = new JSONArray(responseString);
+                        // JSONArray jsonArray = mArray.getJSONArray("Cars");
+                        for (int i = 0; i < mArray.length(); i++) {
+                            JSONObject car = mArray.getJSONObject(i);
+                            Car newCar = new Car(car);
+                            theCars.add(newCar);
+                            Log.d("getCars", " car: " + car.toString());
+                            //mSharedPreferences.edit().putString("car"+i,)
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    mCars = theCars;
+                    if(mCars!=null){
+                        if(mCars.size()>0){
+                            for(int i = 0; i< mCars.size();i++){
+                                mCarAdapter.add(mCars.get(i));
+                            }
+                        }
+                    }
+                }
+
+                @Override
+                public void failure(RetrofitError error) {
+                    Log.d("getCars","error: "+ error.toString());
+                }
+            });
+        }
+    }
     public void initRequesting() {
 
         userState = UserState.REQUESTING;
@@ -630,6 +728,10 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
 
         confirmedAddress = (TextView) findViewById(R.id.confirmedAddress);
         confirmedAddress.setText(addressText.getText());
+
+
+        getCarsAndAddToDropdown();
+
     }
     public void initQueued(){
         Log.d(TAG, "Wash Requested");
@@ -664,6 +766,11 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         cancelButton.setVisibility(View.VISIBLE);
         cancelButton.setText("Cancel");
 
+        waitingContactLayout = (RelativeLayout)findViewById(R.id.waitingContactLayout);
+        waitingContactLayout.setOnClickListener(this);
+        String vendorName = mSharedPreferences.getString("vendorUsername","Vendor Username");
+        TextView vendorUsername = (TextView) findViewById(R.id.waitingVendorName);
+        vendorUsername.setText(vendorName);
 
         int vendorID = mSharedPreferences.getInt("vendorID", -1);
         vendorWaitingImage = (CircleImageView) findViewById(R.id.waitingPicture);
@@ -704,6 +811,12 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         int view = R.layout.washing_layout;
         userState = UserState.WASHING;
         swapView(view);
+
+        String vendorName = mSharedPreferences.getString("vendorUsername","Vendor Username");
+        TextView vendorUserName = (TextView) findViewById(R.id.washingVendorName);
+        vendorUserName.setText(vendorName);
+
+
         cancelButton = (TextView) findViewById(R.id.cancelToolbarButton);
         cancelButton.setOnClickListener(null);
         cancelButton.setVisibility(View.INVISIBLE);
@@ -723,8 +836,22 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         finalizingSubmit = (Button) findViewById(R.id.finalizingSubmitButton);
         finalizingSubmit.setOnClickListener(this);
 
+        String vendorName = mSharedPreferences.getString("vendorUsername","Vendor Username");
+        TextView vendorUsername = (TextView)findViewById(R.id.finalizingVendorName);
+        vendorUsername.setText(vendorName);
+
         ratingBar = (RatingBar) findViewById(R.id.finalizingRating);
         finalizingComments = (EditText) findViewById(R.id.finalizingComments);
+        int vendorID = mSharedPreferences.getInt("vendorID", -1);
+        finalizingVendorImage = (CircleImageView) findViewById(R.id.finalizingVendorImage);
+        if (vendorID > 0) {
+            Picasso.with(this)
+                    .load("http://www.WashMyWhip.us/wmwapp/VendorAvatarImages/vendor" + vendorID + "avatar.jpg")
+                    .resize(100, 100)
+                    .centerCrop()
+                    .into(finalizingVendorImage);
+        }
+
 
     }
 
@@ -757,6 +884,9 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         }
         if(contactButtonWashing!=null){
             contactButtonWashing.setOnClickListener(this);
+        }
+        if(waitingContactLayout!=null) {
+            waitingContactLayout.setOnClickListener(this);
         }
     }
 
@@ -831,10 +961,24 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
 
     private void attemptLogout() {
         //check sharedPreferences for userstate... if passed arrived cannot log out
-        mSharedPreferences.edit().clear().commit();
-        Intent i = new Intent(this,LoginActivity.class);
-        startActivity(i);
-        finish();
+        if(userState == UserState.REQUESTING || userState == UserState.CONFIRMING){
+            mSharedPreferences.edit().clear().commit();
+            Intent i = new Intent(this,LoginActivity.class);
+            startActivity(i);
+            finish();
+        }
+        else {
+            final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Error logging out");
+            builder.setMessage("You cannot log out while you are requesting a wash. Finish or cancel your wash before you log out!");
+            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.cancel();
+                }
+            });
+            builder.show();
+        }
     }
 
     /** calculates the distance between two locations in MILES */

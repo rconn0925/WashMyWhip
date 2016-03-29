@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import de.hdodenhof.circleimageview.CircleImageView;
 
 /**
  * Created by Ross on 2/3/2016.
@@ -30,7 +31,7 @@ public class CarViewHolder extends RecyclerView.ViewHolder{
     public TextView carPlate;
 
     @InjectView(R.id.carPictureProfile)
-    public ImageView carPic;
+    public CircleImageView carPic;
 
     int carID;
 

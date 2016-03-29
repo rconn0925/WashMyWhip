@@ -23,6 +23,17 @@
         android:id="@+id/confirmedAddress"
         android:background="@color/white" />
 
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:src="@drawable/pin"
+        android:id="@+id/pin"
+        android:layout_gravity="center_horizontal"
+        android:paddingBottom="48dp"/>
+
+
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
@@ -31,13 +42,20 @@
         android:layout_centerInParent="true">
 
 
+        <android.support.v7.widget.RecyclerView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/confirmingCarDropdown"
+            android:background="@drawable/rounded_corner"
+            android:layout_marginBottom="12dp" />
+
         <Button
             android:layout_width="match_parent"
-            android:layout_height="60dp"
+            android:layout_height="50dp"
             android:id="@+id/requestWashButton"
             android:text="Request Wash"
             android:textColor="@color/white"
-            android:background="@color/blue"
+            android:background="@drawable/rounded_corner_blue"
             />
 
     </LinearLayout>
