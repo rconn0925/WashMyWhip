@@ -8,7 +8,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -18,6 +20,7 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.method.KeyListener;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -30,12 +33,15 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.squareup.picasso.MemoryPolicy;
+import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -107,6 +113,15 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
 
     @InjectView(R.id.carGridView)
     RecyclerView mView;
+    private String encodedProfile;
+
+    @InjectView(R.id.addCarProfile)
+    TextView cars;
+    @InjectView(R.id.carsProfile)
+    TextView addcar;
+    @InjectView(R.id.accountProfile)
+    TextView account;
+    private Typeface mFont;
 
 
     public ProfileFragment() {
@@ -151,7 +166,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         emailEditText.setEnabled(true);
         phoneEditText.setKeyListener(defaultKeyListener);
         phoneEditText.setEnabled(true);
-
+        profilePicture.setOnClickListener(this);
         EditText[] fields = {firstNameEditText,lastNameEditText,emailEditText,phoneEditText};
 
         for(EditText field:fields){
@@ -228,14 +243,18 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_profile, container, false);
         ButterKnife.inject(this, v);
-
+        mFont = Typeface.createFromAsset(getActivity().getAssets(), "fonts/Archive.otf");
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
         mWashMyWhipEngine = new WashMyWhipEngine();
         editButton = (TextView) getActivity().findViewById(R.id.cancelToolbarButton);
         editButton.setOnClickListener(this);
 
-       // profilePicture.setOnClickListener(this);
+        profilePicture.setOnClickListener(null);
         addCar.setOnClickListener(this);
+
+        addcar.setTypeface(mFont);
+        cars.setTypeface(mFont);
+        account.setTypeface(mFont);
 
         mLayoutManager = new GridLayoutManager(getActivity(), 1);
         mView.setLayoutManager(mLayoutManager);
@@ -289,6 +308,8 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         if(userID>=0){
             Picasso.with(getActivity())
                     .load("http://www.WashMyWhip.us/wmwapp/ClientAvatarImages/client" + userID+ "avatar.jpg")
+                    .networkPolicy(NetworkPolicy.NO_CACHE)
+                    .memoryPolicy(MemoryPolicy.NO_CACHE)
                     .resize(100, 100)
                     .centerCrop()
                     .into(profilePicture);
@@ -330,7 +351,10 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         lastNameEditText.setText(last);
         emailEditText.setText(email);
         phoneEditText.setText(phone);
-
+        firstNameEditText.setTypeface(mFont);
+        lastNameEditText.setTypeface(mFont);
+        emailEditText.setTypeface(mFont);
+        phoneEditText.setTypeface(mFont);
 
         defaultKeyListener = firstNameEditText.getKeyListener();
 
@@ -449,19 +473,52 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
             Log.d("BLAHBLAH", "requestCode: " + requestCode + " ResultCode: " + requestCode + " Data: " + data.getDataString());
             super.onActivityResult(requestCode, resultCode, data);
 
-            if (requestCode == 0||requestCode==1) {
-                Uri photoUri = data.getData();
-                Log.d("BLAHBLAH", "uri: " + photoUri.toString());
-                //Bitmap photo = (Bitmap) data.getExtras().get("data");
-                Bitmap selectedImage = null;
-                try {
-                    selectedImage = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), photoUri);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                //carPic = photoUri.toString();
-                //SCALE IMAGE DOWN
-               // profilePicture.setImageBitmap(selectedImage);
+
+            Uri photoUri = data.getData();
+            String selectedImagePath = null;
+            Log.d("photoResult", "uri: " + photoUri.toString());
+
+
+            Cursor cursor = getActivity().getContentResolver().query(
+                    photoUri, null, null, null, null);
+            if (cursor == null) {
+                selectedImagePath = photoUri.getPath();
+                Log.d("photoResult", "(null)path: " + selectedImagePath);
+            } else {
+                cursor.moveToFirst();
+                int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
+                selectedImagePath = cursor.getString(idx);
+                Log.d("photoResult", "path: " + selectedImagePath);
+            }
+
+            Bitmap selectedImage = null;
+            byte[] byteArray = null;
+            try {
+                selectedImage =Bitmap.createBitmap(MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), photoUri));
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                selectedImage.compress(Bitmap.CompressFormat.JPEG, 60, stream);
+
+                byteArray = stream.toByteArray();
+                encodedProfile = Base64.encodeToString(byteArray, Base64.DEFAULT);
+                profilePicture.setImageBitmap(selectedImage);
+                int userid = Integer.parseInt(mSharedPreferences.getString("UserID", "-1"));
+                mWashMyWhipEngine.uploadClientAvatarImageAndroid(userid, encodedProfile, new Callback<Object>() {
+                    @Override
+                    public void success(Object s, Response response) {
+                        Log.d("vendorAvatarUpload", "Success " + s.toString());
+                    }
+
+                    @Override
+                    public void failure(RetrofitError error) {
+                        //  String json =  new String(((TypedByteArray)error.getResponse().getBody()).getBytes());
+
+                        Log.d("vendorAvatarUpload", "error: " + error.getMessage());
+                    }
+                });
+
+
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }

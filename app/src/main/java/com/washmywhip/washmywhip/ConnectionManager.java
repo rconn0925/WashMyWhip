@@ -259,7 +259,6 @@ public class ConnectionManager {
         mSocket.off("userHasFinalized");
         mSocket.off("transactionID");
         mSocket.off("vendorInfo");
-        mSocket.off("requestAccepted");
         mSocket.off("washCompleted");
         mSocket.off("washStarted");
 

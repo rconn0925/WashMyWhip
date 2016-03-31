@@ -40,7 +40,8 @@
             android:layout_height="wrap_content"
             android:text="HAS ARRIVED"
             android:textColor="@color/blue"
-            android:textSize="18sp"/>
+            android:textSize="18sp"
+            android:id="@+id/hasArrived"/>
         <View
             android:layout_width="170dp"
             android:layout_height="1dp"

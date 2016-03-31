@@ -58,10 +58,10 @@ public interface WashMyWhipService {
 
 
     @FormUrlEncoded
-    @POST("/createCar.php")
+    @POST("/createCarAndroid.php")
     void createCar(@Field("userID") int userID,@Field("color") String color,
                    @Field("make") String make,@Field("model") String model,
-                   @Field("plate") String plate, @Field("hasImage") boolean hasImage,
+                   @Field("plate") String plate, @Field("img") String encodedImage,
                    Callback<String> callback);
 
     @FormUrlEncoded
@@ -99,9 +99,6 @@ public interface WashMyWhipService {
     @POST("/deleteStripeCard.php")
     void deleteStripeCard (@Field("userID") int userID,@Field("cardID") String cardID, Callback<Object> callback);
 
-    @Multipart
-    @POST("/")
-    void uploadCarImage(@Part("file") TypedFile file, Callback<Object> callback);
 
     @FormUrlEncoded
     @POST("/rateVendor.php")
@@ -111,4 +108,8 @@ public interface WashMyWhipService {
     @FormUrlEncoded
     @POST("/getVendorWithID.php")
     void getVendorWithID (@Field("vendorID") int vendorID, Callback<JSONObject> callback);
+
+    @FormUrlEncoded
+    @POST("/uploadClientAvatarImageAndroid.php")
+    void uploadClientAvatarImageAndroid (@Field("userID") int userID, @Field("img") String encodedImage, Callback<Object> callback);
 }

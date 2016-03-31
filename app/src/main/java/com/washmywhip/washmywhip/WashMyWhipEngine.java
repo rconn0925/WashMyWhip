@@ -56,8 +56,8 @@ public class WashMyWhipEngine {
         mService.updateUserPassword(username, password, callback);
     }
 
-    public void createCar(int userID, String color, String make,String model, String plate, boolean hasImage, Callback<String> callback) {
-        mService.createCar(userID, color, make, model, plate, hasImage, callback);
+    public void createCar(int userID, String color, String make,String model, String plate, String encodedImage, Callback<String> callback) {
+        mService.createCar(userID, color, make, model, plate, encodedImage, callback);
     }
     public void updateCar(int userID, String color, String make,String model, String plate, boolean hasImage, Callback<JSONObject> callback) {
         mService.updateCar(userID, color, make, model, plate, hasImage, callback);
@@ -85,6 +85,9 @@ public class WashMyWhipEngine {
     }
     public void getVendorWithID(int vendorID, Callback<JSONObject> callback) {
         mService.getVendorWithID(vendorID, callback);
+    }
+    public void uploadClientAvatarImageAndroid(int userID, String encodedImage, Callback<Object> callback) {
+        mService.uploadClientAvatarImageAndroid(userID, encodedImage, callback);
     }
 
 }

@@ -1,5 +1,6 @@
 package com.washmywhip.washmywhip;
 
+import android.graphics.Typeface;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageView;
@@ -25,6 +26,7 @@ public class CardViewHolder extends RecyclerView.ViewHolder{
     @InjectView(R.id.cardActive)
     public TextView active;
 
+    private Typeface mFont;
     public CardViewHolder(View itemView) {
         super(itemView);
         ButterKnife.inject(this, itemView);

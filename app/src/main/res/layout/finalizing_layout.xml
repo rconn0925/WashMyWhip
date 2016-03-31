@@ -38,6 +38,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="HOW WOULD YOU RATE"
+                android:id="@+id/howRate"
                 android:textSize="18sp"/>
             <View
                 android:layout_width="match_parent"

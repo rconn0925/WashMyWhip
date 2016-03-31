@@ -41,7 +41,7 @@
             android:layout_gravity="center"
             android:text="LOG IN"
             android:textColor="@color/white"
-            android:background="@color/blue"
+            android:background="@drawable/rounded_corner_blue"
             android:layout_marginTop="20dp"
             android:id="@+id/loginloginButton"/>
 
@@ -63,7 +63,7 @@
         android:id="@+id/cancelLoginButton"
         android:layout_centerInParent="true"
         android:text="Cancel"
-        android:background="@color/blue"
+        android:background="@drawable/rounded_corner_blue"
         android:textColor="@color/white"
         android:layout_marginBottom="20dp"/>
 

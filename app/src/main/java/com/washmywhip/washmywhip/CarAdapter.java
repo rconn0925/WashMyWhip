@@ -1,8 +1,12 @@
 package com.washmywhip.washmywhip;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.graphics.Typeface;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,11 +22,14 @@ import java.util.List;
 public class CarAdapter extends RecyclerView.Adapter<CarViewHolder> {
     private Context mContext;
     private List<Car> mCars;
+    private Typeface mFont;
 
 
-    public CarAdapter(Context context, ArrayList<Car> cars){
+
+    public CarAdapter(Context context, ArrayList<Car> cars) {
         this.mContext = context;
         this.mCars = cars;
+        mFont= Typeface.createFromAsset(context.getAssets(), "fonts/Archive.otf");
     }
 
 
@@ -34,13 +41,17 @@ public class CarAdapter extends RecyclerView.Adapter<CarViewHolder> {
     }
 
     @Override
-    public void onBindViewHolder(CarViewHolder holder, int position) {
+    public void onBindViewHolder(final CarViewHolder holder, final int position) {
 
         final Car car = mCars.get(position);
         holder.carColor.setText(car.getColor());
+        holder.carColor.setTypeface(mFont);
         holder.carMake.setText(car.getMake());
+        holder.carMake.setTypeface(mFont);
         holder.carModel.setText(car.getModel());
+        holder.carModel.setTypeface(mFont);
         holder.carPlate.setText(car.getPlate());
+        holder.carPlate.setTypeface(mFont);
         holder.carID = car.getCarID();
 
         Picasso.with(mContext)

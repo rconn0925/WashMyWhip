@@ -2,11 +2,14 @@ package com.washmywhip.washmywhip;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.graphics.Typeface;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import java.lang.reflect.Type;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -38,6 +41,7 @@ public class CarViewHolder extends RecyclerView.ViewHolder{
     public CarViewHolder(View itemView) {
         super(itemView);
         ButterKnife.inject(this, itemView);
+
     }
 
 }

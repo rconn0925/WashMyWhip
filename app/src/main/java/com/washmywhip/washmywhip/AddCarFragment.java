@@ -9,6 +9,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.AssetManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -20,6 +21,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -43,6 +45,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -101,6 +104,7 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
     Button saveButton;
 
     TextView menuTextEdit;
+    String encodedCarImage;
 
     Map<String,String[]> carData = new HashMap<>();
     ArrayList<Car> mCars;
@@ -171,7 +175,7 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
         ButterKnife.inject(this, v);
 
         initMakeList();
-        saveButton.setOnClickListener(this);
+        saveButton.setOnClickListener(null);
         carImage.setOnClickListener(this);
 
 
@@ -213,10 +217,12 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
             saveButton.setOnClickListener(null);
             carColor = colorEditText.getText().toString();
             carPlate = plateEditText.getText().toString();
+            hideKeyboard(colorEditText);
+            hideKeyboard(plateEditText);
 
             if(carColor ==null||carPlate ==null||carModel==null||carMake==null
                     || carColor.equals("")||carPlate.equals("")||carModel.equals("")
-                    ||carMake.equals("")||carPic == null||carPic.equals("")){
+                    ||carMake.equals("")){
 
                 //ALERT FAILURE
                 Log.d("addCar","add car failure... need to enter all the info");
@@ -238,7 +244,7 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
                 if(userID!=null){
                     final int userIDnum = Integer.parseInt(userID);
 
-                    mWashMyWhipEngine.createCar(userIDnum, carColor, carMake, carModel, carPlate, true, new Callback<String>() {
+                    mWashMyWhipEngine.createCar(userIDnum, carColor, carMake, carModel, carPlate, encodedCarImage, new Callback<String>() {
                         @Override
                         public void success(String jsonObject, Response response) {
                             String responseString = new String(((TypedByteArray) response.getBody()).getBytes());
@@ -304,18 +310,41 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
             Log.d("BLAHBLAH", "requestCode: " + requestCode + " ResultCode: " + requestCode + " Data: " + data.getDataString());
             super.onActivityResult(requestCode, resultCode, data);
 
-            if (requestCode == camera_request) {
-                Uri photoUri = data.getData();
-                Log.d("BLAHBLAH", "uri: " + photoUri.toString());
-                //Bitmap photo = (Bitmap) data.getExtras().get("data");
-                Bitmap selectedImage = null;
-                try {
-                    selectedImage = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), photoUri);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                carPic = photoUri.toString();
-                carImage.setImageBitmap(getRoundedCornerImage(selectedImage));
+            Uri photoUri = data.getData();
+            String selectedImagePath = null;
+            Log.d("photoResult", "uri: " + photoUri.toString());
+
+
+            Cursor cursor = getActivity().getContentResolver().query(
+                    photoUri, null, null, null, null);
+            if (cursor == null) {
+                selectedImagePath = photoUri.getPath();
+                Log.d("photoResult", "(null)path: " + selectedImagePath);
+            } else {
+                cursor.moveToFirst();
+                int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
+                selectedImagePath = cursor.getString(idx);
+                Log.d("photoResult", "path: " + selectedImagePath);
+            }
+
+            Bitmap selectedImage = null;
+            byte[] byteArray = null;
+            try {
+                selectedImage =Bitmap.createBitmap(MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), photoUri));
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                selectedImage.compress(Bitmap.CompressFormat.JPEG, 60, stream);
+
+                byteArray = stream.toByteArray();
+                encodedCarImage = Base64.encodeToString(byteArray, Base64.DEFAULT);
+                Log.d("encodedCarImage","encodedImage: "+ encodedCarImage);
+                carImage.setImageBitmap(selectedImage);
+
+                saveButton.setOnClickListener(this);
+                saveButton.setBackgroundResource(R.drawable.rounded_corner_blue);
+
+
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }

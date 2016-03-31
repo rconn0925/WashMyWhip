@@ -69,7 +69,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/account"
-                android:textColor="@color/blue" />
+                android:textColor="@color/blue"
+                android:id="@+id/accountProfile"/>
 
             <EditText
                 android:layout_width="300dp"
@@ -104,7 +105,8 @@
                     android:layout_alignParentLeft="true"
                     android:layout_alignParentStart="true"
                     android:paddingStart="44dp"
-                    android:paddingLeft="44dp"/>
+                    android:paddingLeft="44dp"
+                    android:id="@+id/carsProfile"/>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -114,7 +116,8 @@
                     android:layout_alignParentRight="true"
                     android:layout_alignParentEnd="true"
                     android:paddingRight="44dp"
-                    android:paddingEnd="44dp"/>
+                    android:paddingEnd="44dp"
+                    android:id="@+id/addCarProfile"/>
 
 
             </RelativeLayout>

@@ -14,6 +14,7 @@ import android.content.Loader;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -68,6 +69,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private Button cancel;
     private SharedPreferences mSharedPreferences;
     private Context mContext = this;
+    private Typeface mFont;
 
 
     private View mProgressView;
@@ -87,11 +89,15 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         // Set up the login form.
+        mFont= Typeface.createFromAsset(getAssets(), "fonts/Archive.otf");
         mUsernameView = (EditText) findViewById(R.id.usernameField);
         forgotPassword = (TextView) findViewById(R.id.forgotPassword);
         forgotPassword.setOnClickListener(this);
+        forgotPassword.setTypeface(mFont);
         logIn = (Button) findViewById(R.id.loginloginButton);
+        logIn.setTypeface(mFont);
         cancel = (Button) findViewById(R.id.cancelLoginButton);
+        cancel.setTypeface(mFont);
         loginLayout = (RelativeLayout) findViewById(R.id.loginLayout);
         logIn.setOnClickListener(this);
         cancel.setOnClickListener(this);
