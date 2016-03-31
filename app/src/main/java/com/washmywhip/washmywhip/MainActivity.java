@@ -17,12 +17,15 @@ import android.graphics.Typeface;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
@@ -52,12 +55,14 @@ import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.maps.GeoPoint;
@@ -102,6 +107,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     private static final String SET_LOCATION = "Set Location";
     private WashMyWhipEngine mWashMyWhipEngine;
     private Typeface mFont;
+    boolean isSetup;
 
     private GoogleMap.OnMyLocationChangeListener myLocationChangeListener = new GoogleMap.OnMyLocationChangeListener() {
         @Override
@@ -125,7 +131,36 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         }
     };
 
+    private final LocationListener mLocationListener = new LocationListener() {
+        @Override
+        public void onLocationChanged(final Location location) {
+            //your code here
+            Log.d("LocationListener", "got this location: " + location.toString());
+            currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
+            if(!isSetup){
+                isSetup = true;
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 16.0f));
+            }
 
+
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+
+        }
+    };
+    
     private GoogleMap.OnCameraChangeListener myCameraChangeListener = new GoogleMap.OnCameraChangeListener() {
         @Override
         public void onCameraChange(CameraPosition cameraPosition) {
@@ -209,6 +244,9 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     private CircleImageView finalizingVendorImage;
     private RelativeLayout waitingContactLayout;
     private RecyclerView carDropDown;
+    private Marker start;
+    private Marker end;
+    private LocationManager mLocationManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -417,7 +455,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         mMap = googleMap;
         Log.d("TEST", "map ready");
         allowLocationServices(true);
-        mMap.setOnMyLocationChangeListener(myLocationChangeListener);
+        //mMap.setOnMyLocationChangeListener(myLocationChangeListener);
         mMap.setOnCameraChangeListener(myCameraChangeListener);
         mMap.setOnMapClickListener(myMapClickListener);
     }
@@ -492,9 +530,21 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
                 //                                          int[] grantResults)
                 // to handle the case where the user grants the permission. See the documentation
                 // for ActivityCompat#requestPermissions for more details.
+                showSettingsAlert();
                 return;
             }
             mMap.setMyLocationEnabled(true);
+            mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mLocationListener);
+            mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, mLocationListener);
+            Location lastKnownLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            if(lastKnownLocation!=null){
+                Log.d("LocationTAG", "got last know location");
+                currentLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 16.0f));
+            }
+
+
         } else {
     //disable
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -505,6 +555,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
                 //                                          int[] grantResults)
                 // to handle the case where the user grants the permission. See the documentation
                 // for ActivityCompat#requestPermissions for more details.
+                showSettingsAlert();
                 return;
             }
             mMap.setMyLocationEnabled(false);
@@ -590,6 +641,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
 
                 int view = R.layout.requesting_layout;
                 swapView(view);
+                mMap.clear();
                 initRequesting();
                 if(mConnectionManager.isConnected()){
                     mConnectionManager.cancelRequest();
@@ -844,6 +896,28 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         cancelButton.setVisibility(View.VISIBLE);
         cancelButton.setText("Cancel");
 
+
+        String vendorLat = mSharedPreferences.getString("vendorLat","0");
+        String vendorLong = mSharedPreferences.getString("vendorLong","0");
+        LatLng vendorLocation = new LatLng(Double.parseDouble(vendorLat),Double.parseDouble(vendorLong));
+
+        if (currentLocation != null) {
+            LatLngBounds.Builder b = new LatLngBounds.Builder();
+            start = mMap.addMarker(new MarkerOptions()
+                    .position(mMarker.getPosition())
+                    .draggable(false).visible(false));
+            end = mMap.addMarker(new MarkerOptions()
+                    .position(vendorLocation)
+                    .draggable(false).visible(true));
+            Marker[] markers = {start, end};
+            for (Marker m : markers) {
+                b.include(m.getPosition());
+            }
+            LatLngBounds bounds = b.build();
+            //Change the padding as per needed
+            CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, 244, 244, 0);
+            mMap.animateCamera(cu);
+        }
         waitingContactLayout = (RelativeLayout)findViewById(R.id.waitingContactLayout);
         waitingContactLayout.setOnClickListener(this);
         String vendorName = mSharedPreferences.getString("vendorUsername","Vendor Username");
@@ -1143,6 +1217,27 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
             initFinalizing();
         }
         currentView.setVisibility(View.VISIBLE);
+    }
+
+    public void showSettingsAlert(){
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(mContext);
+
+        // Setting Dialog Title
+        alertDialog.setTitle("GPS settings");
+
+        // Setting Dialog Message
+        alertDialog.setMessage("GPS is not enabled. Do you want to go to settings menu?");
+
+        // On pressing Settings button
+        alertDialog.setPositiveButton("Settings", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog,int which) {
+                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                mContext.startActivity(intent);
+                dialog.cancel();
+            }
+        });
+        alertDialog.setCancelable(false);
+        alertDialog.show();
     }
 
     @Override

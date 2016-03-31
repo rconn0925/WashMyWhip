@@ -67,6 +67,11 @@ public class SelectedCarAdapter extends RecyclerView.Adapter<CarViewHolder> {
         } else {
             holder.itemView.setBackgroundResource(R.drawable.rounded_corner);
         }
+        if(position == 0) {
+            selectedPosition = position;
+            mSharedPreferences.edit().putInt("SelectedCarID",mCars.get(position).getCarID()).apply();
+
+        }
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

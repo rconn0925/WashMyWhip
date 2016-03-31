@@ -56,6 +56,7 @@ public class ConnectionManager {
           //  opts.reconnection = false;
             if (mSocket!=null&&mSocket.connected())
             {
+                Log.d("serverConnection","socket is closing");
                 mSocket.close();
             }
             mSocket = IO.socket(mAddress);
@@ -106,7 +107,7 @@ public class ConnectionManager {
                         Log.d("server connection", "onRequestWash staus: "+ args[0].toString());
                     }
                 }
-            }).on("updateETA", new Emitter.Listener() {
+            }).on("updateVendorETA", new Emitter.Listener() {
                 @Override
                 public void call(Object... args) {
                     Log.d("server connection", "on updateETA getting location");
