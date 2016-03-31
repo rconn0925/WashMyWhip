@@ -13,6 +13,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Typeface;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -66,11 +67,13 @@ import com.squareup.picasso.Picasso;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -98,6 +101,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     private String mAddress;
     private static final String SET_LOCATION = "Set Location";
     private WashMyWhipEngine mWashMyWhipEngine;
+    private Typeface mFont;
 
     private GoogleMap.OnMyLocationChangeListener myLocationChangeListener = new GoogleMap.OnMyLocationChangeListener() {
         @Override
@@ -217,7 +221,8 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         mContext = this;
         toolbar.setTitle("");
         currentFragment = null;
-        userState = UserState.CONFIRMING;
+        userState = UserState.REQUESTING;
+        mFont= Typeface.createFromAsset(getAssets(), "fonts/Archive.otf");
         setSupportActionBar(toolbar);
         isLoaded = -1;
         mMessageReceiver = new BroadcastReceiver() {
@@ -344,7 +349,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     @Override
     protected void onDestroy(){
         super.onDestroy();
-        mConnectionManager.disconnect();
+       // mConnectionManager.disconnect();
 
     }
 
@@ -527,14 +532,58 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
             initConfirming();
         } else if(v.getId() == R.id.requestWashButton){
             requestWashButton.setOnClickListener(null);
+            final int selectedCarID = mSharedPreferences.getInt("SelectedCarID",-1);
+            Log.d("REQUEST WASH", "CarID: " + selectedCarID);
+            //VALIDATE DEFAULT CARD
+            int userID = Integer.parseInt(mSharedPreferences.getString("UserID", "-1"));
+            if(userID>=0){
+                mWashMyWhipEngine.getStripeCustomer(userID, new Callback<JSONObject>() {
+                    @Override
+                    public void success(JSONObject jsonObject, Response response) {
+                        String responseString = new String(((TypedByteArray) response.getBody()).getBytes());
+                        JSONObject json = null;
+                        try {
+                            json = new JSONObject(responseString);
+                            Map<String, Object> paymentData = jsonToMap(json);
+                            //  Log.d("getCards",""+json.toString());
+                            Log.d("getCards", "default source: " + json.getString("default_source"));
+                            String defaultCard = json.getString("default_source");
+                            mSharedPreferences.edit().putString("default_source", defaultCard).apply();
 
-            //CHANGE THIS
-            int carID = 1;
-            int washType = 0;
-            if (mConnectionManager.isConnected()){
-                mConnectionManager.requestWash(mMarker.getPosition(),carID,washType);
+                            if (defaultCard != null && defaultCard.length() > 5) {
+                                Log.d("getCards", "default source valid");
+                                int washType = 0;
+                                if (mConnectionManager.isConnected()) {
+                                    mConnectionManager.requestWash(mMarker.getPosition(), selectedCarID, washType);
+                                }
+                                initQueued();
+                            } else {
+                                Log.d("getCards", "default source invalid");
+                                final AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                                builder.setTitle("You have not added a payment method!");
+                                builder.setMessage("Please add a payment method before requesting a wash!");
+                                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        initRequesting();
+                                        dialog.cancel();
+                                    }
+                                });
+                                builder.show();
+                            }
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    @Override
+                    public void failure(RetrofitError error) {
+                            Log.d("getCards", "failz: " + error.getMessage());
+                    }
+                });
             }
-            initQueued();
+
         } else if (v.getId() == cancelButton.getId()){
             if(cancelButton.getText().toString().equals("Cancel")){
                 Log.d("MENU TEXTVIEW", "CANCEL CLICK");
@@ -606,12 +655,13 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
 
     public void getCarsAndAddToDropdown(){
 
-        final CarAdapter mCarAdapter = new CarAdapter(mContext,new ArrayList<Car>());
+        final SelectedCarAdapter mCarAdapter = new SelectedCarAdapter(mContext,new ArrayList<Car>());
         carDropDown = (RecyclerView) findViewById(R.id.confirmingCarDropdown);
         carDropDown.setAdapter(mCarAdapter);
         GridLayoutManager mLayoutManager = new GridLayoutManager(mContext, 1);
         carDropDown.setLayoutManager(mLayoutManager);
         carDropDown.addItemDecoration(new SpacesItemDecoration(8));
+        /*
         carDropDown.addOnItemTouchListener( new RecyclerItemClickListener(this, new RecyclerItemClickListener.OnItemClickListener() {
             @Override
             public void onItemClick(View view, final int position) {
@@ -620,6 +670,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
                 view.setBackgroundResource(R.drawable.rounded_corner_blue_border);
             }
         }));
+        */
 
         int userIDnum = Integer.parseInt(mSharedPreferences.getString("UserID", "-1"));
         final ArrayList<Car> theCars = new ArrayList<Car>();
@@ -630,27 +681,47 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
                 public void success(List<JSONObject> jsonObject, Response response) {
 
                     String responseString = new String(((TypedByteArray) response.getBody()).getBytes());
-                    //responseString = responseString.replace("[","{").replace("]","}");
-                    // mSharedPreferences.edit().putString("carsString",responseString).apply();
-                    JSONArray mArray = null;
-                    try {
-                        mArray = new JSONArray(responseString);
-                        // JSONArray jsonArray = mArray.getJSONArray("Cars");
-                        for (int i = 0; i < mArray.length(); i++) {
-                            JSONObject car = mArray.getJSONObject(i);
-                            Car newCar = new Car(car);
-                            theCars.add(newCar);
-                            Log.d("getCars", " car: " + car.toString());
-                            //mSharedPreferences.edit().putString("car"+i,)
+                    Log.d("getCars", " response: " + responseString);
+                    if (responseString.equals("[]")) {
+                        Log.d("getCars", " response is null ");
+                        final AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                        builder.setTitle("You don't have any cars!");
+                        builder.setMessage("Please add a car to your profile before you request a wash!");
+                        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                initRequesting();
+                                dialog.cancel();
+
+                            }
+                        });
+                        builder.show();
+
+
+                    } else {
+                        carDropDown.setVisibility(View.VISIBLE);
+                        //responseString = responseString.replace("[","{").replace("]","}");
+                        // mSharedPreferences.edit().putString("carsString",responseString).apply();
+                        JSONArray mArray = null;
+                        try {
+                            mArray = new JSONArray(responseString);
+                            // JSONArray jsonArray = mArray.getJSONArray("Cars");
+                            for (int i = 0; i < mArray.length(); i++) {
+                                JSONObject car = mArray.getJSONObject(i);
+                                Car newCar = new Car(car);
+                                theCars.add(newCar);
+                                Log.d("getCars", " car: " + car.toString());
+                                //mSharedPreferences.edit().putString("car"+i,)
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
                         }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                    mCars = theCars;
-                    if(mCars!=null){
-                        if(mCars.size()>0){
-                            for(int i = 0; i< mCars.size();i++){
-                                mCarAdapter.add(mCars.get(i));
+                        mCars = theCars;
+                        if (mCars != null) {
+                            if (mCars.size() > 0) {
+                                for (int i = 0; i < mCars.size(); i++) {
+                                    mCarAdapter.add(mCars.get(i));
+                                }
                             }
                         }
                     }
@@ -658,7 +729,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
 
                 @Override
                 public void failure(RetrofitError error) {
-                    Log.d("getCars","error: "+ error.toString());
+                    Log.d("getCars", "error: " + error.toString());
                 }
             });
         }
@@ -669,9 +740,11 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         int view = R.layout.requesting_layout;
         swapView(view);
         setLocationButton = (Button) findViewById(R.id.setLocationButton);
+        setLocationButton.setTypeface(mFont);
         setLocationButton.setOnClickListener(this);
 
         addressText = (EditText) findViewById(R.id.addressText);
+        addressText.setTypeface(mFont);
         addressText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -684,6 +757,10 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
             }
         });
 
+        TextView washType = (TextView)findViewById(R.id.washTypeRequesting);
+        TextView washPrice = (TextView)findViewById(R.id.washPriceRequesting);
+        washPrice.setTypeface(mFont);
+        washType.setTypeface(mFont);
 
         mMap.setOnCameraChangeListener(myCameraChangeListener);
         //unlock camera postion
@@ -702,7 +779,6 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         if(mMarker!= null){
             mMarker.remove();
         }
-
         LatLng newLocation = mMap.getCameraPosition().target;
         mMarker = mMap.addMarker(new MarkerOptions().position(newLocation).visible(false));
 
@@ -723,10 +799,12 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         //RecyclerView carSelector = (RecyclerView) findViewById(R.id.carSelect);
         //carSelector.setAdapter(null);
         requestWashButton = (Button) findViewById(R.id.requestWashButton);
+        requestWashButton.setTypeface(mFont);
         requestWashButton.setOnClickListener(this);
 
 
         confirmedAddress = (TextView) findViewById(R.id.confirmedAddress);
+        confirmedAddress.setTypeface(mFont);
         confirmedAddress.setText(addressText.getText());
 
 
@@ -770,6 +848,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         waitingContactLayout.setOnClickListener(this);
         String vendorName = mSharedPreferences.getString("vendorUsername","Vendor Username");
         TextView vendorUsername = (TextView) findViewById(R.id.waitingVendorName);
+        vendorUsername.setTypeface(mFont);
         vendorUsername.setText(vendorName);
 
         int vendorID = mSharedPreferences.getInt("vendorID", -1);
@@ -793,7 +872,21 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         cancelButton.setText("Cancel");
 
         contactButtonArrived = (Button) findViewById(R.id.arrivedContact);
+        contactButtonArrived.setTypeface(mFont);
         contactButtonArrived.setOnClickListener(this);
+
+        TextView arrivedVendorUsername = (TextView) findViewById(R.id.arrivedVendorUsername);
+        TextView arrivedWashCost = (TextView) findViewById(R.id.arrivedWashCost);
+        TextView arrivedWashType = (TextView) findViewById(R.id.arrivedWashType);
+        TextView hasArrived = (TextView) findViewById(R.id.hasArrived);
+        hasArrived.setTypeface(mFont);
+        arrivedVendorUsername.setTypeface(mFont);
+        arrivedWashCost.setTypeface(mFont);
+        arrivedWashType.setTypeface(mFont);
+        String vendorName = mSharedPreferences.getString("vendorUsername","Vendor Username");
+        arrivedVendorUsername.setText(vendorName);
+
+
         int vendorID = mSharedPreferences.getInt("vendorID", -1);
         arrivedVendorImage = (CircleImageView) findViewById(R.id.arrivedVendorImage);
         if (vendorID > 0) {
@@ -814,6 +907,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
 
         String vendorName = mSharedPreferences.getString("vendorUsername","Vendor Username");
         TextView vendorUserName = (TextView) findViewById(R.id.washingVendorName);
+        vendorUserName.setTypeface(mFont);
         vendorUserName.setText(vendorName);
 
 
@@ -822,6 +916,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         cancelButton.setVisibility(View.INVISIBLE);
 
         contactButtonWashing = (Button) findViewById(R.id.washingContact);
+        contactButtonWashing.setTypeface(mFont);
         contactButtonWashing.setOnClickListener(this);
     }
     public void initFinalizing(){
@@ -835,9 +930,14 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
 
         finalizingSubmit = (Button) findViewById(R.id.finalizingSubmitButton);
         finalizingSubmit.setOnClickListener(this);
+        finalizingSubmit.setTypeface(mFont);
+
+        TextView howWouldYouRate = (TextView) findViewById(R.id.howRate);
+        howWouldYouRate.setTypeface(mFont);
 
         String vendorName = mSharedPreferences.getString("vendorUsername","Vendor Username");
         TextView vendorUsername = (TextView)findViewById(R.id.finalizingVendorName);
+        vendorUsername.setTypeface(mFont);
         vendorUsername.setText(vendorName);
 
         ratingBar = (RatingBar) findViewById(R.id.finalizingRating);
@@ -861,10 +961,13 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         contactView = getLayoutInflater().inflate(view, parent, false);
         parent.addView(contactView);
         textContact = (TextView) findViewById(R.id.contactText);
+        textContact.setTypeface(mFont);
         textContact.setOnClickListener(this);
         callContact = (TextView) findViewById(R.id.contactCall);
+        callContact.setTypeface(mFont);
         callContact.setOnClickListener(this);
         doneContact = (TextView) findViewById(R.id.contactDone);
+        doneContact.setTypeface(mFont);
         doneContact.setOnClickListener(this);
 
 
@@ -891,16 +994,19 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     }
 
     public void contactCallVendor() {
-        String userNumber = "2039215412";
-        Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + userNumber));
-        startActivity(intent);
+        String userNumber = mSharedPreferences.getString("vendorPhone", "null");
+        if(!userNumber.equals("null")) {
+            Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + userNumber));
+            startActivity(intent);
+        }
 
 
     }
     public void contactTextVendor(){
-        String number = "2039215412";  // The number on which you want to send SMS
-        startActivity(new Intent(Intent.ACTION_VIEW, Uri.fromParts("sms", number, null)));
-
+        String userNumber = mSharedPreferences.getString("vendorPhone", "null");
+        if(!userNumber.equals("null")){
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.fromParts("sms", userNumber, null)));
+        }
     }
 
 
@@ -1061,5 +1167,49 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     public void showKeyboard(View view) {
         InputMethodManager inputMethodManager =(InputMethodManager)getSystemService(Activity.INPUT_METHOD_SERVICE);
         inputMethodManager.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT);
+    }
+    public static Map<String, Object> jsonToMap(JSONObject json) throws JSONException {
+        Map<String, Object> retMap = new HashMap<String, Object>();
+
+        if(json != JSONObject.NULL) {
+            retMap = toMap(json);
+        }
+        return retMap;
+    }
+
+    public static Map<String, Object> toMap(JSONObject object) throws JSONException {
+        Map<String, Object> map = new HashMap<String, Object>();
+
+        Iterator<String> keysItr = object.keys();
+        while(keysItr.hasNext()) {
+            String key = keysItr.next();
+            Object value = object.get(key);
+
+            if(value instanceof JSONArray) {
+                value = toList((JSONArray) value);
+            }
+
+            else if(value instanceof JSONObject) {
+                value = toMap((JSONObject) value);
+            }
+            map.put(key, value);
+        }
+        return map;
+    }
+
+    public static List<Object> toList(JSONArray array) throws JSONException {
+        List<Object> list = new ArrayList<Object>();
+        for(int i = 0; i < array.length(); i++) {
+            Object value = array.get(i);
+            if(value instanceof JSONArray) {
+                value = toList((JSONArray) value);
+            }
+
+            else if(value instanceof JSONObject) {
+                value = toMap((JSONObject) value);
+            }
+            list.add(value);
+        }
+        return list;
     }
 }
