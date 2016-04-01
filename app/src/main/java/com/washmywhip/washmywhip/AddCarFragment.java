@@ -173,7 +173,6 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
 
         View v = inflater.inflate(R.layout.fragment_add_car, container, false);
         ButterKnife.inject(this, v);
-
         initMakeList();
         saveButton.setOnClickListener(null);
         carImage.setOnClickListener(this);
@@ -265,7 +264,7 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
                         @Override
                         public void failure(RetrofitError error) {
                             Log.d("CREATEcar",error.toString());
-
+                            saveButton.setOnClickListener(AddCarFragment.this);
                             final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                             builder.setTitle("Error adding car");
                             builder.setMessage(error.toString());
@@ -332,7 +331,7 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
             try {
                 selectedImage =Bitmap.createBitmap(MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), photoUri));
                 ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                selectedImage.compress(Bitmap.CompressFormat.JPEG, 60, stream);
+                selectedImage.compress(Bitmap.CompressFormat.JPEG, 50, stream);
 
                 byteArray = stream.toByteArray();
                 encodedCarImage = Base64.encodeToString(byteArray, Base64.DEFAULT);

@@ -27,7 +27,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/addPayment"
-                android:background="@color/blue"
+                android:background="@drawable/rounded_corner_blue"
                 android:textColor="@color/white"
                 android:text="Save"
                 android:layout_marginTop="10dp" />
@@ -36,7 +36,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/cancelPayment"
-                android:background="@color/blue"
+                android:background="@drawable/rounded_corner_blue"
                 android:textColor="@color/white"
                 android:text="Cancel"
                 android:layout_marginTop="10dp" />

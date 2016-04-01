@@ -1,5 +1,6 @@
 package com.washmywhip.washmywhip;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.FragmentManager;
 import android.content.Context;
@@ -13,6 +14,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -210,10 +212,15 @@ public class AddPaymentFragment extends Fragment implements View.OnClickListener
             }
         } else if (v.getId() == cancelButton.getId()){
 
+            hideKeyboard(form);
             Fragment paymentFragment = PaymentFragment.newInstance();
             FragmentManager fragmentManager = getFragmentManager();
             fragmentManager.beginTransaction().replace(R.id.contentFrame, paymentFragment).commit();
         }
+    }
+    public void hideKeyboard(View view) {
+        InputMethodManager inputMethodManager =(InputMethodManager)getActivity().getSystemService(Activity.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
     /**

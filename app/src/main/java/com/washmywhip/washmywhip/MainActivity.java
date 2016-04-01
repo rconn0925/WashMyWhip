@@ -763,6 +763,9 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
                                 Car newCar = new Car(car);
                                 theCars.add(newCar);
                                 Log.d("getCars", " car: " + car.toString());
+                                if(i==0){
+                                    mSharedPreferences.edit().putInt("SelectedCarID",newCar.getCarID()).apply();
+                                }
                                 //mSharedPreferences.edit().putString("car"+i,)
                             }
                         } catch (JSONException e) {
@@ -935,6 +938,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
                     .into(vendorWaitingImage);
         }
     }
+
     public void initArrived() {
         hasBeenRequested = true;
         userState = UserState.ARRIVED;
