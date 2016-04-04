@@ -1,6 +1,7 @@
 package com.washmywhip.washmywhip;
 
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -16,6 +17,8 @@ public class WelcomeActivity extends AppCompatActivity implements View.OnClickLi
     @InjectView(R.id.signUpButton)
     Button signup;
 
+    Typeface mFont;
+
 
 
 
@@ -24,8 +27,11 @@ public class WelcomeActivity extends AppCompatActivity implements View.OnClickLi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.welcome_layout);
         ButterKnife.inject(this);
+        mFont= Typeface.createFromAsset(getAssets(), "fonts/Archive.otf");
         login.setOnClickListener(this);
+        login.setTypeface(mFont);
         signup.setOnClickListener(this);
+        signup.setTypeface(mFont);
     }
 
     @Override

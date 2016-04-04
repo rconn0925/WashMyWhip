@@ -13,29 +13,35 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/w"
-            android:layout_gravity="center"/>
+            android:src="@drawable/wnew"
+            android:layout_gravity="center"
+            android:layout_marginBottom="12dp"/>
 
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/logowhite"
-            android:layout_gravity="center"/>
+            android:layout_gravity="center"
+            android:layout_marginBottom="12dp"/>
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingTop="10dp"
+            android:layout_marginBottom="12dp"
             android:layout_gravity="center"
             android:id="@+id/loginButton"
-            android:text="LOG IN" />
+            android:text="LOG IN"
+            android:background="@drawable/rounded_corner"
+            android:textColor="@color/blue" />
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:id="@+id/signUpButton"
-            android:text="SIGN UP" />
+            android:text="SIGN UP"
+            android:background="@drawable/rounded_corner"
+            android:textColor="@color/blue"/>
 
 
     </LinearLayout>

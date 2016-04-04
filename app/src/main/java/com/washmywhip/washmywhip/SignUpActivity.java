@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
@@ -50,6 +51,7 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
     @InjectView(R.id.signUpLayout)
     RelativeLayout mView;
 
+    Typeface mFont;
 
     EditText[] fields;
     Context mContext;
@@ -69,9 +71,12 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
+        mFont= Typeface.createFromAsset(getAssets(), "fonts/Archive.otf");
         ButterKnife.inject(this);
         singup.setOnClickListener(this);
+        singup.setTypeface(mFont);
         cancel.setOnClickListener(this);
+        cancel.setTypeface(mFont);
         mView.setOnTouchListener(this);
         fields = new EditText[]{username,password,reenterPassword,email,phone,firstName,lastName};
         for(EditText field:fields){

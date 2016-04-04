@@ -90,7 +90,7 @@ import retrofit.RetrofitError;
 import retrofit.client.Response;
 import retrofit.mime.TypedByteArray;
 
-public class MainActivity extends AppCompatActivity implements AboutFragment.OnFragmentInteractionListener, PaymentFragment.OnFragmentInteractionListener, ProfileFragment.OnFragmentInteractionListener, OnMapReadyCallback, View.OnClickListener, AdapterView.OnItemClickListener, NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity implements AboutFragment.OnFragmentInteractionListener,AddPaymentFragment.OnFragmentInteractionListener,AddCarFragment.OnFragmentInteractionListener, PaymentFragment.OnFragmentInteractionListener, ProfileFragment.OnFragmentInteractionListener, OnMapReadyCallback, View.OnClickListener, AdapterView.OnItemClickListener, NavigationView.OnNavigationItemSelectedListener {
 
     private static final String TAG = "MainActivity";
 
