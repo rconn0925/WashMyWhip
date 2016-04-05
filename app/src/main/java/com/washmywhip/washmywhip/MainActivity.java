@@ -1048,14 +1048,22 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         doneContact.setTypeface(mFont);
         doneContact.setOnClickListener(this);
 
-
+        if(contactButtonArrived!=null){
+            contactButtonArrived.setOnClickListener(null);
+        }
+        if(contactButtonWashing!=null){
+            contactButtonWashing.setOnClickListener(null);
+        }
+        if(waitingContactLayout!=null) {
+            waitingContactLayout.setOnClickListener(null);
+        }
 
 
     }
 
     public void removeContact() {
         //int view = R.layout.contact_layout;
-        ViewGroup parent = (ViewGroup) currentView.getParent();
+        ViewGroup parent = (ViewGroup) contactView.getParent();
         // int index = parent.indexOfChild(contactView);
         parent.removeView(contactView);
 
