@@ -309,7 +309,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     builder.show();
 
                     mPasswordView.setText("");
-                    mUsernameView.setText("");
+                   // mUsernameView.setText("");
 
                 }
             });

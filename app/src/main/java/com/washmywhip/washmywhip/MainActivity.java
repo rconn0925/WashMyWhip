@@ -172,9 +172,9 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
                 List<Address> addressList = mGeocoder.getFromLocation(cameraLocation.latitude, cameraLocation.longitude, 1);
                 if (addressList.size() > 0) {
                     String address = addressList.get(0).getAddressLine(0);
-                    String city = addressList.get(0).getAddressLine(1);
-                    String country = addressList.get(0).getAddressLine(2);
-                    mAddress = address + " " + city + ", " + country;
+                 //   String city = addressList.get(0).getAddressLine(1);
+                //    String country = addressList.get(0).getAddressLine(2);
+                    mAddress = address; //+ " " + city + ", " + country;
 
                     if(addressText!=null){
                         addressText.setText(mAddress);
@@ -478,9 +478,9 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
             List<Address> addressList = mGeocoder.getFromLocation(newLocation.latitude, newLocation.longitude, 1);
             if(addressList.size()>0){
                 String address = addressList.get(0).getAddressLine(0);
-                String city = addressList.get(0).getAddressLine(1);
-                String country = addressList.get(0).getAddressLine(2);
-                mAddress = address + " " + city + ", " + country;
+               // String city = addressList.get(0).getAddressLine(1);
+               // String country = addressList.get(0).getAddressLine(2);
+                mAddress = address;// + " " + city + ", " + country;
             }
         } catch (IOException e) {
             e.printStackTrace();

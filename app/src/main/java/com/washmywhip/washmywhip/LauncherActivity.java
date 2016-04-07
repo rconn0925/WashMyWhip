@@ -20,11 +20,13 @@ public class LauncherActivity extends AppCompatActivity {
             Log.d("WASHMYWHIP", "login from past session");
             Intent i = new Intent(this, MainActivity.class);
             startActivity(i);
+            finish();
         } else {
             //Main Activity
             Log.d("WASHMYWHIP","new login session");
             Intent i = new Intent(this, LoginActivity.class);
             startActivity(i);
+            finish();
         }
     }
 
