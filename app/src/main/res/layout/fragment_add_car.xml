@@ -7,70 +7,81 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:id="@+id/addCarFragment"
     android:scrollbars="vertical">
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:orientation="vertical"
-        android:layout_width="250dp"
+    <RelativeLayout
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="center">
+        android:id="@+id/addCarFragment"
+        android:onClick="onClick"
+        android:clickable="true">
 
-        <ImageView
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:orientation="vertical"
             android:layout_width="250dp"
-            android:layout_height="150dp"
-            android:id="@+id/addCarPicture"
-            android:layout_gravity="center_horizontal"
-            android:clickable="true"
-            android:onClick="onClick"
-            android:src="@drawable/carplaceholder"
-            android:scaleType="fitXY"/>
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true">
 
-        <Spinner
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:id="@+id/addCarMake"
-            android:layout_gravity="center_horizontal"
-            android:background="@drawable/rounded_corner"
-            android:layout_marginTop="10dp" />
+            <ImageView
+                android:layout_width="250dp"
+                android:layout_height="150dp"
+                android:id="@+id/addCarPicture"
+                android:layout_gravity="center_horizontal"
+                android:clickable="true"
+                android:onClick="onClick"
+                android:src="@drawable/carplaceholder"
+                android:scaleType="fitXY"/>
 
-        <Spinner
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:id="@+id/addCarModel"
-            android:layout_gravity="center_horizontal"
-            android:background="@drawable/rounded_corner"
-            android:layout_marginTop="10dp" />
+            <Spinner
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:id="@+id/addCarMake"
+                android:layout_gravity="center_horizontal"
+                android:background="@drawable/rounded_corner"
+                android:layout_marginTop="10dp" />
 
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:id="@+id/addCarColor"
-            android:layout_gravity="center_horizontal"
-            android:background="@drawable/rounded_corner"
-            android:hint="@string/color"
-            android:layout_marginTop="10dp"/>
+            <Spinner
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:id="@+id/addCarModel"
+                android:layout_gravity="center_horizontal"
+                android:background="@drawable/rounded_corner"
+                android:layout_marginTop="10dp" />
 
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:id="@+id/addCarPlate"
-            android:layout_gravity="center_horizontal"
-            android:background="@drawable/rounded_corner"
-            android:hint="@string/plate"
-            android:layout_marginTop="10dp"/>
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:id="@+id/addCarColor"
+                android:layout_gravity="center_horizontal"
+                android:background="@drawable/rounded_corner"
+                android:hint="@string/color"
+                android:layout_marginTop="10dp"/>
 
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/saveCar"
-            android:text="@string/save_car"
-            android:textColor="@color/white"
-            android:background="@drawable/rounded_corner_grey"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="10dp"/>
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:id="@+id/addCarPlate"
+                android:layout_gravity="center_horizontal"
+                android:background="@drawable/rounded_corner"
+                android:hint="@string/plate"
+                android:layout_marginTop="10dp"/>
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/saveCar"
+                android:text="@string/save_car"
+                android:textColor="@color/white"
+                android:background="@drawable/rounded_corner_grey"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="10dp"/>
 
 
-    </LinearLayout>
+        </LinearLayout>
+
+    </RelativeLayout>
 
 </FrameLayout>

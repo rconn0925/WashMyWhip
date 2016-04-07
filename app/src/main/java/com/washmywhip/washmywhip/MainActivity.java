@@ -108,6 +108,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     private WashMyWhipEngine mWashMyWhipEngine;
     private Typeface mFont;
     boolean isSetup;
+    private LatLng cameraLocation;
 
     private GoogleMap.OnMyLocationChangeListener myLocationChangeListener = new GoogleMap.OnMyLocationChangeListener() {
         @Override
@@ -166,7 +167,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         public void onCameraChange(CameraPosition cameraPosition) {
 
             //mGeocoder = new Geocoder(MainActivity.this);
-            LatLng cameraLocation = cameraPosition.target;
+            cameraLocation = cameraPosition.target;
             try {
                 List<Address> addressList = mGeocoder.getFromLocation(cameraLocation.latitude, cameraLocation.longitude, 1);
                 if (addressList.size() > 0) {
@@ -416,7 +417,16 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         };
 
         mDrawerLayout.setDrawerListener(mDrawerToggle);
-        navDrawerList.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, navigationOptions));
+        //mDrawerLayout.setDrawe
+
+        ArrayList<NavDrawerItem> data = new ArrayList<>();
+        data.add(new NavDrawerItem("Wash My Whip",R.drawable.newwmw));
+        data.add(new NavDrawerItem("Profile",R.drawable.profileicon));
+        data.add(new NavDrawerItem("Payment",R.drawable.paymenticon));
+        data.add(new NavDrawerItem("About",R.drawable.abouticon));
+        data.add(new NavDrawerItem("Sign Out",R.drawable.signout));
+
+        navDrawerList.setAdapter(new NavDrawerListAdapter(this, R.layout.nav_drawer_item, data));
         navDrawerList.setOnItemClickListener(this);
 
         //NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
@@ -580,6 +590,9 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     public void onClick(View v) {
         Log.d("TEST", "onClick");
         if(v.getId()==R.id.setLocationButton) {
+           // mMap.getCameraPosition()
+            //mMarker = new Marker(currentLocation);
+            mMarker = mMap.addMarker(new MarkerOptions().position(cameraLocation).draggable(false).visible(false));
             initConfirming();
         } else if(v.getId() == R.id.requestWashButton){
             requestWashButton.setOnClickListener(null);
@@ -904,7 +917,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         String vendorLong = mSharedPreferences.getString("vendorLong","0");
         LatLng vendorLocation = new LatLng(Double.parseDouble(vendorLat),Double.parseDouble(vendorLong));
 
-        if (currentLocation != null) {
+        if (mMarker != null) {
             LatLngBounds.Builder b = new LatLngBounds.Builder();
             start = mMap.addMarker(new MarkerOptions()
                     .position(mMarker.getPosition())

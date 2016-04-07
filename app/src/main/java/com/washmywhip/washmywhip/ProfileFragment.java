@@ -311,8 +311,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
                     .networkPolicy(NetworkPolicy.NO_CACHE)
                     .memoryPolicy(MemoryPolicy.NO_CACHE)
                     .resize(100, 100)
-                    .centerCrop()
-                    .into(profilePicture);
+                    .centerCrop().placeholder(R.drawable.picture).error(R.drawable.picture).into(profilePicture);
         }
         addCarsToView();
 

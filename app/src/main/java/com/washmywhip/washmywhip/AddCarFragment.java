@@ -32,7 +32,9 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -103,6 +105,9 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
     @InjectView(R.id.saveCar)
     Button saveButton;
 
+    @InjectView(R.id.addCarFragment)
+    RelativeLayout background;
+
     TextView menuTextEdit;
     String encodedCarImage;
 
@@ -170,13 +175,14 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
         menuTextEdit = (TextView) getActivity().findViewById(R.id.cancelToolbarButton);
         menuTextEdit.setText("Cancel");
         menuTextEdit.setOnClickListener(this);
+      //  background = (RelativeLayout) getActivity().findViewById(R.id.profileFragment);
 
         View v = inflater.inflate(R.layout.fragment_add_car, container, false);
         ButterKnife.inject(this, v);
         initMakeList();
         saveButton.setOnClickListener(null);
         carImage.setOnClickListener(this);
-
+        background.setOnClickListener(this);
 
         return v;
     }
@@ -290,6 +296,13 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
             Fragment profileFragment = ProfileFragment.newInstance();
             FragmentManager fragmentManager = getFragmentManager();
             fragmentManager.beginTransaction().replace(R.id.contentFrame, profileFragment).commit();
+        } else if (v.getId() == background.getId()){
+            if(colorEditText.hasFocus()){
+                hideKeyboard(colorEditText);
+            }
+            if(plateEditText.hasFocus()){
+                hideKeyboard(plateEditText);
+            }
         }
     }
 
