@@ -6,9 +6,16 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+
+import butterknife.ButterKnife;
+import butterknife.InjectView;
 
 
 /**
@@ -19,16 +26,10 @@ import android.view.ViewGroup;
  * Use the {@link AboutFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class AboutFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+public class AboutFragment extends Fragment implements AdapterView.OnItemClickListener {
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
+    @InjectView(R.id.aboutList)
+    ListView aboutList;
     private OnFragmentInteractionListener mListener;
 
     public AboutFragment() {
@@ -46,17 +47,20 @@ public class AboutFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_about, container, false);
+        View v = inflater.inflate(R.layout.fragment_about, container, false);
+        ButterKnife.inject(this, v);
+        // Inflate the layout for this fragment
+        String[] items = { "Rate Us In The App Store", "Like Us On Facebook", "Our Website", "Legal Documentation" };
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(),android.R.layout.simple_list_item_1, items);
+        aboutList.setAdapter(adapter);
+        aboutList.setOnItemClickListener(this);
+        return v;
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -99,6 +103,46 @@ public class AboutFragment extends Fragment {
         }
     }
 
+    public void likeUsOnFacebook(){
+        String url = "http://www.facebook.com";
+        Intent i = new Intent(Intent.ACTION_VIEW);
+        i.setData(Uri.parse(url));
+        startActivity(i);
+    }
+
+    public void ourWebsite() {
+        String url = "http://www.washmywhip.com";
+        Intent i = new Intent(Intent.ACTION_VIEW);
+        i.setData(Uri.parse(url));
+        startActivity(i);
+    }
+
+    public void legalDocumentation(){
+        String url = "http://www.washmywhip.com/legal";
+        Intent i = new Intent(Intent.ACTION_VIEW);
+        i.setData(Uri.parse(url));
+        startActivity(i);
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        if(position == 0){
+            Log.d("AboutFrag", "0");
+            rateOnPlayStore();
+        } else if (position == 1){
+            Log.d("AboutFrag","1");
+            likeUsOnFacebook();
+        } else if (position == 2){
+            Log.d("AboutFrag","2");
+            ourWebsite();
+        } else if (position == 3){
+            Log.d("AboutFrag","3");
+            legalDocumentation();
+        } else if (position == 4){
+            Log.d("AboutFrag","4");
+        }
+
+    }
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated

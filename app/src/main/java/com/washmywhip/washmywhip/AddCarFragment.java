@@ -324,7 +324,7 @@ public class AddCarFragment extends Fragment implements View.OnClickListener{
 
             Uri photoUri = data.getData();
             String selectedImagePath = null;
-            Log.d("photoResult", "uri: " + photoUri.toString());
+          //  Log.d("photoResult", "uri: " + photoUri.toString());
 
 
             Cursor cursor = getActivity().getContentResolver().query(

@@ -193,7 +193,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         @Override
         public void onMapClick(LatLng latLng) {
             Log.d(TAG, "clearing focus on address text");
-            if(isLoaded==1&&addressText.hasFocus()){
+            if(addressText.hasFocus()){
                 Log.d(TAG, "address text has focus");
                 hideKeyboard(addressText);
             }
@@ -651,14 +651,38 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         } else if (v.getId() == cancelButton.getId()){
             if(cancelButton.getText().toString().equals("Cancel")){
                 Log.d("MENU TEXTVIEW", "CANCEL CLICK");
+                final AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                builder.setTitle("Cancel Wash");
+                builder.setMessage("Are you sure you want to cancel your wash?");
+                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if(userState.equals(UserState.QUEUED)){
+                            Log.d("server connection", "CANCELing ACTIVE");
+                            if(mConnectionManager.isConnected()){
+                                mConnectionManager.cancelActiveRequest();
+                            }
 
-                int view = R.layout.requesting_layout;
-                swapView(view);
-                mMap.clear();
-                initRequesting();
-                if(mConnectionManager.isConnected()){
-                    mConnectionManager.cancelRequest();
-                }
+                        } else {
+                            Log.d("server connection", "CANCEL" + userState);
+                            if(mConnectionManager.isConnected()){
+                                mConnectionManager.cancelRequest();
+                            }
+                        }
+                        int view = R.layout.requesting_layout;
+                        swapView(view);
+                        mMap.clear();
+                        initRequesting();
+                        dialog.cancel();
+                    }
+                });
+                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+                builder.show();
 
             } else if (cancelButton.getText().toString().equals("Edit")){
                 Log.d("MENU TEXTVIEW", "EDIT CLICK");
@@ -803,7 +827,7 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
         }
     }
     public void initRequesting() {
-
+        mMap.clear();
         userState = UserState.REQUESTING;
         int view = R.layout.requesting_layout;
         swapView(view);
@@ -1167,10 +1191,27 @@ public class MainActivity extends AppCompatActivity implements AboutFragment.OnF
     private void attemptLogout() {
         //check sharedPreferences for userstate... if passed arrived cannot log out
         if(userState == UserState.REQUESTING || userState == UserState.CONFIRMING){
-            mSharedPreferences.edit().clear().commit();
-            Intent i = new Intent(this,LoginActivity.class);
-            startActivity(i);
-            finish();
+
+            final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Sign Out");
+            builder.setMessage("Are you sure you want to sign out?");
+            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    mSharedPreferences.edit().clear().commit();
+                    Intent i = new Intent(mContext, LoginActivity.class);
+                    startActivity(i);
+                    finish();
+                    dialog.cancel();
+                }
+            });
+            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.cancel();
+                }
+            });
+            builder.show();
         }
         else {
             final AlertDialog.Builder builder = new AlertDialog.Builder(this);

@@ -222,6 +222,12 @@ public class ConnectionManager {
             mSocket.emit("cancelRequest", "");
         }
     }
+    public void cancelActiveRequest() {
+        Log.d("server connection", "cancelActiveRequest server: "+ mSocket.connected());
+        if(mSocket.connected()){
+            mSocket.emit("cancelActiveRequest", "");
+        }
+    }
 
     public void updateVendorInfo(){
         Log.d("server connection", "updateVendorInfo server: "+ mSocket.connected());
@@ -268,4 +274,5 @@ public class ConnectionManager {
     public boolean isConnected(){
         return mSocket.connected();
     }
+
 }

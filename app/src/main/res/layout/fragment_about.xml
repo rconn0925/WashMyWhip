@@ -9,11 +9,15 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <ImageView
+        <ListView
+            android:id="@+id/aboutList"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:src="@drawable/about"
-            android:layout_alignParentTop="true"/>
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            android:choiceMode="singleChoice"
+            android:divider="@color/light_grey"
+            android:dividerHeight="1dp"
+            android:background="@color/white"/>
 
 
 
